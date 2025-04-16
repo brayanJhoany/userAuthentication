@@ -45,3 +45,5 @@ build/
 
 # Others
 *.tmp
+
+db_data/
