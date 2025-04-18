@@ -1,10 +1,7 @@
 package com.app.entity;
 
 import jakarta.persistence.*;
-import jakarta.validation.constraints.Email;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Size;
+import jakarta.validation.constraints.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -35,7 +32,8 @@ public class UserEntity {
     @Column(nullable = false)
     private String password;
 
-    @NotNull
+    @NotNull(message = "La edad es obligatoria")
+    @Min(value = 0, message = "La edad debe ser mayor o igual a 0")
     private Integer age;
 
     @Column(nullable = false)
