@@ -4,7 +4,8 @@ import com.app.dto.CreateUserDTO;
 import com.app.dto.PaginatedResponse;
 import com.app.dto.UpdateUserDTO;
 import com.app.entity.UserEntity;
-import com.app.exception.RequestException;
+import com.app.exception.user.EmailAlreadyExistsException;
+import com.app.exception.user.UserNotFoundException;
 import com.app.repository.UserRepository;
 import jakarta.validation.Valid;
 import org.springframework.data.domain.Page;
@@ -27,7 +28,7 @@ public class UserService {
 
     public UserEntity createUser(CreateUserDTO dto) {
         if (userRepository.existsByEmail(dto.getEmail())) {
-            throw new RequestException("the email is already registered");
+            throw new EmailAlreadyExistsException();
         }
 
         UserEntity user = UserEntity.builder()
@@ -42,13 +43,13 @@ public class UserService {
     public void deleteUser(String id) {
         Long userId = Long.valueOf(id);
         UserEntity user = userRepository.findById(userId)
-                .orElseThrow(() -> new RequestException("User with id " + id + " not found"));
+                .orElseThrow(() -> new UserNotFoundException());
         userRepository.delete(user);
     }
     public UserEntity getUser(String id) {
         Long userId = Long.valueOf(id);
         return userRepository.findById(userId)
-                .orElseThrow(() -> new RequestException("User with id " + id + " not found"));
+                .orElseThrow(() -> new UserNotFoundException());
     }
     public PaginatedResponse<UserEntity> getAllUsersPaginated(int page, int size, String email, String username) {
 
@@ -72,10 +73,10 @@ public class UserService {
     public UserEntity updateUser(String id, @Valid UpdateUserDTO updateUserDTO) {
         Long userId = Long.valueOf(id);
         UserEntity user = userRepository.findById(userId)
-                .orElseThrow(() -> new RequestException("User with id " + id + " not found"));
+                .orElseThrow(() -> new UserNotFoundException());
         if (updateUserDTO.getEmail() != null && !updateUserDTO.getEmail().isBlank()) {
             if (userRepository.existsByEmail(updateUserDTO.getEmail())) {
-                throw new RequestException("the email is already registered");
+                throw new EmailAlreadyExistsException();
             }
             user.setEmail(updateUserDTO.getEmail());
         }

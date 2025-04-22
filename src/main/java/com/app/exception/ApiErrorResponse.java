@@ -10,8 +10,9 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class ApiErrorResponse {
-    private String message;
-    private int status;
-    private String error;
+    private String code;        // → "USER_NOT_FOUND"
+    private String message;     // → "Usuario no encontrado"
+    private int    status;      // → 404
+    private String error;       // → "Not Found"
     private String timestamp;
 }

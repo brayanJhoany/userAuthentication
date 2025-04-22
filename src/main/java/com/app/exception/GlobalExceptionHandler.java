@@ -4,6 +4,7 @@ package com.app.exception;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -14,46 +15,65 @@ import java.util.stream.Collectors;
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
+    // ← Excepciones propias de negocio
+    @ExceptionHandler(BusinessException.class)
+    public ResponseEntity<ApiErrorResponse> handleBusiness(
+            BusinessException ex, HttpServletRequest request) {
 
+        return buildError(ex.getErrorCode(),
+                ex.getHttpStatus(), request);
+    }
+
+    // ← Validaciones de @Valid
     @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity<ApiErrorResponse> handleValidationErrors(
-            MethodArgumentNotValidException ex,
-            HttpServletRequest request) {
+    public ResponseEntity<ApiErrorResponse> handleValidation(
+            MethodArgumentNotValidException ex, HttpServletRequest req) {
 
-        String message = ex.getBindingResult().getFieldErrors().stream()
-                .map(error -> error.getField() + ": " + error.getDefaultMessage())
+        String detail = ex.getBindingResult().getFieldErrors().stream()
+                .map(err -> err.getField() + ": " + err.getDefaultMessage())
                 .collect(Collectors.joining(" | "));
 
-        return buildError("Validación fallida: " + message, HttpStatus.BAD_REQUEST, request);
+        return buildError(ErrorCode.VALIDATION_ERROR,
+                HttpStatus.BAD_REQUEST, req, detail);
     }
 
+    // ← Cualquier cosa no controlada
     @ExceptionHandler(Exception.class)
-    public ResponseEntity<ApiErrorResponse> handleGenericException(
-            Exception ex, HttpServletRequest request) {
-        return buildError("Error inesperado", HttpStatus.INTERNAL_SERVER_ERROR, request);
+    public ResponseEntity<ApiErrorResponse> handleGeneric(
+            Exception ex, HttpServletRequest req) {
+
+        return buildError(ErrorCode.UNEXPECTED_ERROR,
+                HttpStatus.INTERNAL_SERVER_ERROR, req);
     }
 
-    private ResponseEntity<ApiErrorResponse> buildError(String message, HttpStatus status, HttpServletRequest request) {
-        ApiErrorResponse error = ApiErrorResponse.builder()
+    /* ---------- helpers ---------- */
+
+    private ResponseEntity<ApiErrorResponse> buildError(
+            ErrorCode code, HttpStatus status,
+            HttpServletRequest req) {
+
+        return buildError(code, status, req, code.getDefaultMessage());
+    }
+
+    private ResponseEntity<ApiErrorResponse> buildError(
+            ErrorCode code, HttpStatus status,
+            HttpServletRequest req, String message) {
+
+        ApiErrorResponse body = ApiErrorResponse.builder()
+                .code(code.name())
                 .message(message)
                 .status(status.value())
                 .error(status.getReasonPhrase())
                 .timestamp(Instant.now().toString())
                 .build();
 
-        return new ResponseEntity<>(error, status);
+        return new ResponseEntity<>(body, status);
     }
+    @ExceptionHandler(BadCredentialsException.class)
+    public ResponseEntity<ApiErrorResponse> handleBadCredentials(
+            BadCredentialsException ex, HttpServletRequest req) {
 
-    @ExceptionHandler(RequestException.class)
-    public ResponseEntity<ApiErrorResponse> handleBusinessException(RequestException ex, HttpServletRequest request) {
-        ApiErrorResponse error = ApiErrorResponse.builder()
-                .message(ex.getMessage())
-                .status(HttpStatus.BAD_REQUEST.value())
-                .error("Bad Request")
-                .timestamp(Instant.now().toString())
-                .build();
-
-        return new ResponseEntity<>(error, HttpStatus.CONFLICT);
+        return buildError(ErrorCode.INVALID_CREDENTIALS,
+                HttpStatus.UNAUTHORIZED, req);
     }
-
 }
