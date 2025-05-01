@@ -29,12 +29,12 @@ public class JwtUtils {
     /**
      * Genera un token JWT para el usuario proporcionado.
      *
-     * @param username nombre del usuario autenticado
+     * @param email correo electrónico del usuario
      * @return token JWT firmado con clave secreta y expiración configurada
      */
-    public String generateAccessToken(String username) {
+    public String generateAccessToken(String email) {
         return Jwts.builder()
-                .setSubject(username)
+                .setSubject(email)
                 .setIssuedAt(new Date(System.currentTimeMillis()))
                 .setExpiration(new Date(System.currentTimeMillis() + Long.parseLong(timeExpiration)))
                 .signWith(getSignatureKey(), SignatureAlgorithm.HS256)
@@ -67,7 +67,7 @@ public class JwtUtils {
      * @param token token JWT
      * @return nombre de usuario contenido en el token
      */
-    public String getUsernameFromToken(String token) {
+    public String getEmailFromToken(String token) {
         return getClaim(token, Claims::getSubject);
     }
 

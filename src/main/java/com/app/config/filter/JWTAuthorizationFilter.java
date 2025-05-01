@@ -37,15 +37,15 @@ public class JWTAuthorizationFilter extends OncePerRequestFilter {
         if (token != null && token.startsWith("Bearer")) {
             token = token.substring(7);
             if(jwtUtils.validateToken(token)){
-                String username = jwtUtils.getUsernameFromToken(token);
-                UserDetails userDetails = userDetailServiceImp.loadUserByUsername(username);
+                String email = jwtUtils.getEmailFromToken(token);
+                UserDetails userDetails = userDetailServiceImp.loadUserByUsername(email);
 
                 UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(
-                        username,null, userDetails.getAuthorities()
+                        email,null, userDetails.getAuthorities()
                 );
                 SecurityContextHolder.getContext().setAuthentication(authenticationToken);
                 filterChain.doFilter(request, response);
-                
+
             }else{
                 handleAuthError(response, request, "Token is not valid");
                 return;
