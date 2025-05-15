@@ -1,5 +1,6 @@
 package com.app.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
 import lombok.AllArgsConstructor;
@@ -30,6 +31,7 @@ public class UserEntity {
 
     @NotBlank
     @Column(nullable = false)
+    @JsonIgnore
     private String password;
 
     @NotNull(message = "La edad es obligatoria")

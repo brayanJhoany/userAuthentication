@@ -1,6 +1,7 @@
 package com.app.factory;
 
 import com.app.dto.CreateUserDTO;
+import com.app.dto.UpdateUserDTO;
 import com.app.entity.UserEntity;
 
 public class UserTestFactory {
@@ -38,6 +39,14 @@ public class UserTestFactory {
         dto.setUsername("defaultUser");
         dto.setPassword(STRONG_PASS);
         dto.setAge(30);
+        return dto;
+    }
+    public static UpdateUserDTO anyUpdateDto(){
+        UpdateUserDTO dto = new UpdateUserDTO();
+        dto.setEmail("default.update@example.com");
+        dto.setUsername("defaultUserUpdate");
+        dto.setPassword(STRONG_PASS);
+        dto.setAge(31);
         return dto;
     }
 

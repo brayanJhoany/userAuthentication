@@ -37,7 +37,10 @@ public class UserService {
 
         Pageable pageable = PageRequest.of(page, size, Sort.by("id").descending());
         Page<UserEntity> userPage;
-        if ((email != null && !email.isBlank()) || (username != null && !username.isBlank())) {
+        email = (email != null && !email.isBlank()) ? email : null;
+        username = (username != null && !username.isBlank()) ? username : null;
+
+        if (email != null || username != null) {
             userPage = userRepository.findByFilters(email, username, pageable);
         } else {
             userPage = userRepository.findAll(pageable);

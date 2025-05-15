@@ -37,13 +37,13 @@ public class AuthController {
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody @Valid AuthRequest request) {
         Authentication authentication = authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(request.getUsername(), request.getPassword())
+                new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword())
         );
 
         User user = (User) authentication.getPrincipal();
-        String token = jwtUtils.generateAccessToken(user.getUsername());
+        String token = jwtUtils.generateAccessToken(request.getEmail());
 
-        return ResponseEntity.ok(new AuthResponse(token, user.getUsername()));
+        return ResponseEntity.ok(new AuthResponse(token,request.getEmail()));
     }
     @PostMapping("/register")
     public ResponseEntity<?> register(@RequestBody @Valid CreateUserDTO request) {
