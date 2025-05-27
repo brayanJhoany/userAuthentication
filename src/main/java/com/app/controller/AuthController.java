@@ -6,7 +6,6 @@ import com.app.dto.AuthResponse;
 import com.app.dto.CreateUserDTO;
 import com.app.dto.RegisterResponse;
 import com.app.entity.UserEntity;
-import com.app.repository.UserRepository;
 import com.app.service.UserService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -30,7 +29,6 @@ public class AuthController {
 
     private final AuthenticationManager authenticationManager;
     private final JwtUtils jwtUtils;
-    private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final UserService userService;
 
@@ -45,10 +43,11 @@ public class AuthController {
 
         return ResponseEntity.ok(new AuthResponse(token,request.getEmail()));
     }
+
     @PostMapping("/register")
     public ResponseEntity<?> register(@RequestBody @Valid CreateUserDTO request) {
         UserEntity newUser = userService.createUser(request);
-        String token = jwtUtils.generateAccessToken(newUser.getUsername());
+        String token = jwtUtils.generateAccessToken(newUser.getEmail());
         RegisterResponse response = new RegisterResponse();
         response.setEmail(newUser.getEmail());
         response.setUsername(newUser.getUsername());

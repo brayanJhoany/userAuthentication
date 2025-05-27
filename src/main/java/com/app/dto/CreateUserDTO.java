@@ -1,10 +1,7 @@
 package com.app.dto;
 
 
-import jakarta.validation.constraints.Email;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Size;
+import jakarta.validation.constraints.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -23,9 +20,12 @@ public class CreateUserDTO {
     private String username;
 
     @NotBlank
+    @Size(min = 6)
     private String password;
 
     @NotNull(message = "La edad es obligatoria")
+    @Min(1)
+    @Max(255)
     private Integer age;
 
 }
