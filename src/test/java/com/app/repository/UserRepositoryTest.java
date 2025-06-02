@@ -26,8 +26,9 @@ public class UserRepositoryTest {
     @Test
     void shouldReturnTrueWhenEmailExists() {
         UserEntity user = createDefaultUser();
-        entityManager.persist(user); // Save the user to the h2 database
-        entityManager.flush(); // Ensure the user is saved
+        user.setId(null);
+        entityManager.persist(user);
+        entityManager.flush();
 
         boolean exists = userRepository.existsByEmail(user.getEmail());
         assertTrue(exists);
@@ -36,6 +37,7 @@ public class UserRepositoryTest {
     @Test
     void shouldReturnUserWhenFindByUsername(){
         UserEntity user = createDefaultUser();
+        user.setId(null);
         entityManager.persist(user);
         entityManager.flush();
             UserEntity foundUser = userRepository.findByUsername(user.getUsername()).orElse(null);
@@ -48,6 +50,7 @@ public class UserRepositoryTest {
     @Test
     void shouldReturnUserWhenFindByEmail() {
         UserEntity user = createDefaultUser();
+        user.setId(null);
         entityManager.persist(user);
         entityManager.flush();
         UserEntity foundUser = userRepository.findByEmail(user.getEmail()).orElse(null);
@@ -60,6 +63,7 @@ public class UserRepositoryTest {
     @Test
     void shouldReturnUserWhenFilterByEmail() {
         UserEntity user = createDefaultUser();
+        user.setId(null);
         entityManager.persist(user);
         entityManager.flush();
 
@@ -76,6 +80,7 @@ public class UserRepositoryTest {
     @Test
     void shouldReturnUserWhenFilterByUsername(){
         UserEntity user = createDefaultUser();
+        user.setId(null);
         entityManager.persist(user);
         entityManager.flush();
         Page<UserEntity> results =userRepository.findByFilters(null,"test", PageRequest.of(0, 10));
@@ -92,6 +97,7 @@ public class UserRepositoryTest {
     @Test
     void shouldReturnEmptyWhenNoMatch(){
         UserEntity user = createDefaultUser();
+        user.setId(null);
         entityManager.persist(user);
         entityManager.flush();
         Page<UserEntity> results =userRepository.findByFilters(null,"nonexistent", PageRequest.of(0, 10));
@@ -113,6 +119,7 @@ public class UserRepositoryTest {
     @Test
     void shouldDeleteUserSuccessfully(){
         UserEntity user = createDefaultUser();
+        user.setId(null);
         entityManager.persist(user);
         entityManager.flush();
         userRepository.delete(user);
