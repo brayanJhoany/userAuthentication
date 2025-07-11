@@ -34,6 +34,10 @@ public class UserService {
         return userRepository.findById(userId)
                 .orElseThrow(() -> new UserNotFoundException());
     }
+    public UserEntity findByEmail(String email) {
+        return userRepository.findByEmail(email)
+                .orElseThrow(() -> new UserNotFoundException());
+    }
 
     public PaginatedResponse<UserEntity> getAllUsersPaginated(int page, int size, String email, String username) {
 

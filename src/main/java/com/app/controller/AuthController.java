@@ -4,7 +4,7 @@ import com.app.config.jwt.JwtUtils;
 import com.app.dto.AuthRequest;
 import com.app.dto.AuthResponse;
 import com.app.dto.CreateUserDTO;
-import com.app.dto.RegisterResponse;
+import com.app.dto.UserResponseDTO;
 import com.app.entity.UserEntity;
 import com.app.service.UserService;
 import jakarta.validation.Valid;
@@ -39,20 +39,42 @@ public class AuthController {
         );
 
         User user = (User) authentication.getPrincipal();
+        if(user == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid credentials");
+        }
+        UserEntity userDB = userService.findByEmail(user.getUsername());
+        if (!userDB.isEnabled()) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("User account is disabled");
+        }
         String token = jwtUtils.generateAccessToken(request.getEmail());
+        UserResponseDTO userResponseDTO = new UserResponseDTO();
+        userResponseDTO.setId(userDB.getId());
+        userResponseDTO.setEmail(userDB.getEmail());
+        userResponseDTO.setUsername(userDB.getUsername());
+        userResponseDTO.setAge(userDB.getAge());
+        userResponseDTO.setEnabled(userDB.isEnabled());
+        AuthResponse response = new AuthResponse();
+        response.setToken(token);
+        response.setUser(userResponseDTO);
 
-        return ResponseEntity.ok(new AuthResponse(token,request.getEmail()));
+        return ResponseEntity.ok(response);
     }
 
     @PostMapping("/register")
     public ResponseEntity<?> register(@RequestBody @Valid CreateUserDTO request) {
         UserEntity newUser = userService.createUser(request);
         String token = jwtUtils.generateAccessToken(newUser.getEmail());
-        RegisterResponse response = new RegisterResponse();
-        response.setEmail(newUser.getEmail());
-        response.setUsername(newUser.getUsername());
-        response.setAge(newUser.getAge());
+
+        UserResponseDTO userResponseDTO = new UserResponseDTO();
+        userResponseDTO.setId(newUser.getId());
+        userResponseDTO.setEmail(newUser.getEmail());
+        userResponseDTO.setUsername(newUser.getUsername());
+        userResponseDTO.setAge(newUser.getAge());
+        userResponseDTO.setEnabled(newUser.isEnabled());
+        AuthResponse response = new AuthResponse();
         response.setToken(token);
+        response.setUser(userResponseDTO);
+
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 }

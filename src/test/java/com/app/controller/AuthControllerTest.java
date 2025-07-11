@@ -59,26 +59,47 @@ class AuthControllerTest {
     private PasswordEncoder passwordEncoder;
 
     @Test
-    void shouldReturnTokenWhenCredentialsAreValid() throws Exception {
-        AuthRequest request = new AuthRequest("test@example.com", "password");
-        UserDetails userDetails = new User(request.getEmail(), request.getPassword(), Collections.emptyList());
+    void shouldReturnTokenAndUserWhenCredentialsAreValid() throws Exception {
+        // Arrange
+        String email = "test@example.com";
+        String password = "StrongPass1!";
+        String fakeToken = "fake-jwt-token";
+
+        AuthRequest request = new AuthRequest(email, password);
+        UserDetails userDetails = new User(email, password, Collections.emptyList());
         Authentication authentication = new UsernamePasswordAuthenticationToken(userDetails, null);
+
+        UserEntity userDB = new UserEntity();
+        userDB.setId(1L);
+        userDB.setEmail(email);
+        userDB.setUsername("testUser");
+        userDB.setAge(30);
+        userDB.setEnabled(true);
 
         when(authenticationManager.authenticate(any()))
                 .thenReturn(authentication);
-        when(jwtUtils.generateAccessToken(request.getEmail()))
-                .thenReturn("fake-jwt-token");
+        when(jwtUtils.generateAccessToken(email))
+                .thenReturn(fakeToken);
+        when(userService.findByEmail(email))
+                .thenReturn(userDB);
 
+        // Act & Assert
         mockMvc.perform(post("/api/v1/auth/login")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.token").value("fake-jwt-token"))
-                .andExpect(jsonPath("$.email").value(request.getEmail()));
+                .andExpect(jsonPath("$.token").value(fakeToken))
+                .andExpect(jsonPath("$.user.email").value(email))
+                .andExpect(jsonPath("$.user.username").value("testUser"))
+                .andExpect(jsonPath("$.user.age").value(30))
+                .andExpect(jsonPath("$.user.enabled").value(true));
 
+        // Verify
         verify(authenticationManager).authenticate(any());
-        verify(jwtUtils).generateAccessToken(request.getEmail());
+        verify(jwtUtils).generateAccessToken(email);
+        verify(userService).findByEmail(email);
     }
+
 
     @Test
     void shouldReturnUnauthorizedWhenCredentialsAreInvalid() throws Exception {
@@ -112,18 +133,20 @@ class AuthControllerTest {
                 .thenReturn(savedUser);
         when(jwtUtils.generateAccessToken(savedUser.getEmail()))
                 .thenReturn("fake-jwt-token");
-        when(passwordEncoder.encode(anyString())).thenReturn("encoded-password");
 
+        // Act & Assert
         ResultActions result = mockMvc.perform(post("/api/v1/auth/register")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(userDTO)));
 
         result.andExpect(status().isCreated())
                 .andExpect(jsonPath("$.token").value("fake-jwt-token"))
-                .andExpect(jsonPath("$.email").value(userDTO.getEmail()))
-                .andExpect(jsonPath("$.username").value(userDTO.getUsername()))
-                .andExpect(jsonPath("$.age").value(userDTO.getAge()));
-
+                .andExpect(jsonPath("$.user.id").value(savedUser.getId()))
+                .andExpect(jsonPath("$.user.email").value(userDTO.getEmail()))
+                .andExpect(jsonPath("$.user.username").value(userDTO.getUsername()))
+                .andExpect(jsonPath("$.user.age").value(userDTO.getAge()))
+                .andExpect(jsonPath("$.user.enabled").value(true));
+        // Verify interactions
         verify(userService).createUser(any(CreateUserDTO.class));
         verify(jwtUtils).generateAccessToken(savedUser.getEmail());
     }
