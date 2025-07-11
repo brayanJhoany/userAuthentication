@@ -30,29 +30,30 @@ public class JWTAuthorizationFilter extends OncePerRequestFilter {
 
 
     @Override
-    protected void doFilterInternal(@NotNull HttpServletRequest request ,
-                                    @NotNull  HttpServletResponse response ,
-                                    @NotNull  FilterChain filterChain) throws ServletException, IOException {
-        String token = request.getHeader("Authorization");
-        if (token != null && token.startsWith("Bearer")) {
-            token = token.substring(7);
-            if(jwtUtils.validateToken(token)){
-                String email = jwtUtils.getEmailFromToken(token);
-                UserDetails userDetails = userDetailServiceImp.loadUserByUsername(email);
+    protected void doFilterInternal(HttpServletRequest request,
+                                    HttpServletResponse response,
+                                    FilterChain chain) throws ServletException, IOException {
 
-                UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(
-                        email,null, userDetails.getAuthorities()
-                );
-                SecurityContextHolder.getContext().setAuthentication(authenticationToken);
-                filterChain.doFilter(request, response);
+        String header = request.getHeader("Authorization");
 
-            }else{
+        if (header != null && header.startsWith("Bearer ")) {
+            String token = header.substring(7);
+
+            if (!jwtUtils.validateToken(token)) {
                 handleAuthError(response, request, "Token is not valid");
                 return;
             }
+
+            String email = jwtUtils.getEmailFromToken(token);
+            UserDetails userDetails = userDetailServiceImp.loadUserByUsername(email);
+            UsernamePasswordAuthenticationToken auth =
+                    new UsernamePasswordAuthenticationToken(email, null, userDetails.getAuthorities());
+            SecurityContextHolder.getContext().setAuthentication(auth);
         }
-        filterChain.doFilter(request, response);
+
+        chain.doFilter(request, response);
     }
+
     private void handleAuthError(HttpServletResponse response, HttpServletRequest request, String message) throws IOException {
         response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
         response.setContentType("application/json");

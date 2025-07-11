@@ -9,6 +9,7 @@ import com.app.exception.user.UserNotFoundException;
 import com.app.exception.user.WeakPasswordException;
 import com.app.repository.UserRepository;
 import jakarta.validation.Valid;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -17,6 +18,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 
+@Slf4j
 @Service
 public class UserService {
     private final UserRepository userRepository;
@@ -61,8 +63,10 @@ public class UserService {
             throw new EmailAlreadyExistsException();
         }
         if (!isStrongPassword(dto.getPassword())) {
+            log.info("Weak password detected for email: {}", dto.getEmail());
             throw new WeakPasswordException();
         }
+        log.info("Creating new user with email: {}", dto.getEmail());
 
         UserEntity user = UserEntity.builder()
                 .email(dto.getEmail())

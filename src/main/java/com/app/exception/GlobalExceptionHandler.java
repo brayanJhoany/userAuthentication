@@ -1,6 +1,7 @@
 package com.app.exception;
 
 
+import com.app.exception.user.WeakPasswordException;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -69,11 +70,19 @@ public class GlobalExceptionHandler {
 
         return new ResponseEntity<>(body, status);
     }
+
     @ExceptionHandler(BadCredentialsException.class)
     public ResponseEntity<ApiErrorResponse> handleBadCredentials(
             BadCredentialsException ex, HttpServletRequest req) {
 
         return buildError(ErrorCode.INVALID_CREDENTIALS,
                 HttpStatus.UNAUTHORIZED, req);
+    }
+    @ExceptionHandler(WeakPasswordException.class)
+    public ResponseEntity<ApiErrorResponse> handleWeakPassword(
+            WeakPasswordException ex, HttpServletRequest req) {
+
+        return buildError(ErrorCode.WEAK_PASSWORD,
+                HttpStatus.BAD_REQUEST, req, ex.getMessage());
     }
 }

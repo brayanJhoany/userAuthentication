@@ -25,7 +25,7 @@ public class CreateUserDTO {
 
     @NotNull(message = "La edad es obligatoria")
     @Min(1)
-    @Max(255)
+    @Max(130)
     private Integer age;
 
 }

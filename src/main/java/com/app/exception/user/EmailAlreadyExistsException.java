@@ -6,6 +6,6 @@ import org.springframework.http.HttpStatus;
 
 public class EmailAlreadyExistsException extends BusinessException {
     public EmailAlreadyExistsException() {
-        super(ErrorCode.USERNAME_ALREADY_EXISTS, HttpStatus.BAD_REQUEST);
+        super(ErrorCode.EMAIL_ALREADY_EXISTS, HttpStatus.BAD_REQUEST);
     }
 }
