@@ -65,13 +65,7 @@ public class UserService {
         List<UserResponseDTO> dtoList = userPage
                 .getContent()
                 .stream()
-                .map(user -> new UserResponseDTO(
-                        user.getId(),
-                        user.getEmail(),
-                        user.getUsername(),
-                        user.getAge(),
-                        user.isEnabled()
-                ))
+                .map(this::toUserResponseDto)
                 .toList();
 
         return PaginatedResponse.<UserResponseDTO>builder()
@@ -101,13 +95,7 @@ public class UserService {
                 .build();
 
         UserEntity userDB =  userRepository.save(user);
-        return UserResponseDTO.builder()
-                .id(userDB.getId())
-                .email(userDB.getEmail())
-                .username(userDB.getUsername())
-                .age(userDB.getAge())
-                .enabled(userDB.isEnabled())
-                .build();
+        return toUserResponseDto(userDB);
     }
 
     public UserResponseDTO updateUser(String id, @Valid UpdateUserDTO updateUserDTO) {
@@ -129,15 +117,8 @@ public class UserService {
             }
             user.setPassword(passwordEncoder.encode(updateUserDTO.getPassword()));
         }
-
         UserEntity userDB = userRepository.save(user);
-        return UserResponseDTO.builder()
-                .id(userDB.getId())
-                .email(userDB.getEmail())
-                .username(userDB.getUsername())
-                .age(userDB.getAge())
-                .enabled(userDB.isEnabled())
-                .build();
+        return toUserResponseDto(userDB);
     }
 
     public void deleteUser(String id) {
@@ -154,5 +135,13 @@ public class UserService {
         return password.matches("^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[@$!%*?&])[A-Za-z\\d@$!%*?&]{8,}$");
     }
 
-
+    private UserResponseDTO toUserResponseDto(UserEntity user){
+        return UserResponseDTO.builder()
+                .id(user.getId())
+                .email(user.getEmail())
+                .username(user.getUsername())
+                .age(user.getAge())
+                .enabled(user.isEnabled())
+                .build();
+    }
 }
