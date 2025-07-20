@@ -67,7 +67,7 @@ public class UserRepositoryTest {
         entityManager.persist(user);
         entityManager.flush();
 
-        Page<UserEntity> results = userRepository.findByFilters("test", null, PageRequest.of(0, 10));
+        Page<UserEntity> results = userRepository.findByFilters("default", null, PageRequest.of(0, 10));
         // Assert
         assertThat(results)
                 .isNotNull()

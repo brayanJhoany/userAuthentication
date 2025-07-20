@@ -3,6 +3,7 @@ package com.app.service;
 import com.app.dto.CreateUserDTO;
 import com.app.dto.PaginatedResponse;
 import com.app.dto.UpdateUserDTO;
+import com.app.dto.UserResponseDTO;
 import com.app.entity.UserEntity;
 import com.app.exception.user.EmailAlreadyExistsException;
 import com.app.exception.user.UserNotFoundException;
@@ -17,6 +18,8 @@ import org.springframework.data.domain.Sort;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 
 @Slf4j
 @Service
@@ -29,17 +32,25 @@ public class UserService {
         this.passwordEncoder = passwordEncoder;
     }
 
-    public UserEntity getUser(String id) {
+    public UserResponseDTO getUser(String id) {
         Long userId = Long.valueOf(id);
-        return userRepository.findById(userId)
+        UserEntity user =  userRepository.findById(userId)
                 .orElseThrow(() -> new UserNotFoundException());
+        UserResponseDTO userResponseDTO = UserResponseDTO.builder()
+                .id(user.getId())
+                .email(user.getEmail())
+                .username(user.getUsername())
+                .age(user.getAge())
+                .enabled(user.isEnabled())
+                .build();
+        return userResponseDTO;
     }
     public UserEntity findByEmail(String email) {
         return userRepository.findByEmail(email)
                 .orElseThrow(() -> new UserNotFoundException());
     }
 
-    public PaginatedResponse<UserEntity> getAllUsersPaginated(int page, int size, String email, String username) {
+    public PaginatedResponse<UserResponseDTO> getAllUsersPaginated(int page, int size, String email, String username) {
 
         Pageable pageable = PageRequest.of(page, size, Sort.by("id").descending());
         Page<UserEntity> userPage;
@@ -51,9 +62,20 @@ public class UserService {
         } else {
             userPage = userRepository.findAll(pageable);
         }
+        List<UserResponseDTO> dtoList = userPage
+                .getContent()
+                .stream()
+                .map(user -> new UserResponseDTO(
+                        user.getId(),
+                        user.getEmail(),
+                        user.getUsername(),
+                        user.getAge(),
+                        user.isEnabled()
+                ))
+                .toList();
 
-        return PaginatedResponse.<UserEntity>builder()
-                .content(userPage.getContent())
+        return PaginatedResponse.<UserResponseDTO>builder()
+                .content(dtoList)
                 .currentPage(userPage.getNumber())
                 .totalPages(userPage.getTotalPages())
                 .totalElements(userPage.getTotalElements())
@@ -62,7 +84,7 @@ public class UserService {
                 .build();
     }
 
-    public UserEntity createUser(CreateUserDTO dto) {
+    public UserResponseDTO createUser(CreateUserDTO dto) {
         if (userRepository.existsByEmail(dto.getEmail())) {
             throw new EmailAlreadyExistsException();
         }
@@ -70,8 +92,6 @@ public class UserService {
             log.info("Weak password detected for email: {}", dto.getEmail());
             throw new WeakPasswordException();
         }
-        log.info("Creating new user with email: {}", dto.getEmail());
-
         UserEntity user = UserEntity.builder()
                 .email(dto.getEmail())
                 .username(dto.getUsername())
@@ -80,10 +100,17 @@ public class UserService {
                 .enabled(true)
                 .build();
 
-        return userRepository.save(user);
+        UserEntity userDB =  userRepository.save(user);
+        return UserResponseDTO.builder()
+                .id(userDB.getId())
+                .email(userDB.getEmail())
+                .username(userDB.getUsername())
+                .age(userDB.getAge())
+                .enabled(userDB.isEnabled())
+                .build();
     }
 
-    public UserEntity updateUser(String id, @Valid UpdateUserDTO updateUserDTO) {
+    public UserResponseDTO updateUser(String id, @Valid UpdateUserDTO updateUserDTO) {
         Long userId = Long.valueOf(id);
         UserEntity user = userRepository.findById(userId)
                 .orElseThrow(() -> new UserNotFoundException());
@@ -103,7 +130,14 @@ public class UserService {
             user.setPassword(passwordEncoder.encode(updateUserDTO.getPassword()));
         }
 
-        return userRepository.save(user);
+        UserEntity userDB = userRepository.save(user);
+        return UserResponseDTO.builder()
+                .id(userDB.getId())
+                .email(userDB.getEmail())
+                .username(userDB.getUsername())
+                .age(userDB.getAge())
+                .enabled(userDB.isEnabled())
+                .build();
     }
 
     public void deleteUser(String id) {
@@ -113,7 +147,7 @@ public class UserService {
         userRepository.delete(user);
     }
 
-    private boolean isStrongPassword(String password) {
+    public boolean isStrongPassword(String password) {
         if (password == null) {
             return false;
         }

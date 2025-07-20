@@ -4,6 +4,7 @@ import com.app.config.filter.JWTAuthorizationFilter;
 import com.app.dto.CreateUserDTO;
 import com.app.dto.PaginatedResponse;
 import com.app.dto.UpdateUserDTO;
+import com.app.dto.UserResponseDTO;
 import com.app.entity.UserEntity;
 import com.app.exception.user.UserNotFoundException;
 import com.app.factory.UserTestFactory;
@@ -44,12 +45,14 @@ class UserControllerTest {
     private UserService userService;
     @Autowired
     private ObjectMapper objectMapper;
+
     @Test
     void shouldReturnPaginatedUsers() throws Exception {
 
         UserEntity user = UserTestFactory.anyUser();
-        PaginatedResponse<UserEntity> page = PaginatedResponse.<UserEntity>builder()
-                .content(List.of(user))
+        UserResponseDTO userResponseDTO = UserTestFactory.mapToResponse(user);
+        PaginatedResponse<UserResponseDTO> page = PaginatedResponse.<UserResponseDTO>builder()
+                .content(List.of(userResponseDTO))
                 .currentPage(0)
                 .totalPages(1)
                 .totalElements(1L)
@@ -64,25 +67,34 @@ class UserControllerTest {
                         .param("page", "0")
                         .param("size", "10"))
                 .andExpect(status().isOk())
+                .andExpect(jsonPath("$.content[0].id")
+                        .value(userResponseDTO.getId()))
                 .andExpect(jsonPath("$.content[0].email")
-                        .value("default@example.com"))
+                        .value(userResponseDTO.getEmail()))
                 .andExpect(jsonPath("$.content[0].username")
-                        .value("defaultUser"))
+                        .value(userResponseDTO.getUsername()))
+                .andExpect(jsonPath("$.content[0].age")
+                        .value(userResponseDTO.getAge()))
+                .andExpect(jsonPath("$.content[0].enabled")
+                        .value(userResponseDTO.isEnabled()))
                 .andExpect(jsonPath("$.currentPage").value(0))
                 .andExpect(jsonPath("$.totalPages").value(1))
                 .andExpect(jsonPath("$.totalElements").value(1))
                 .andExpect(jsonPath("$.size").value(1))
                 .andExpect(jsonPath("$.last").value(true));
+        //
+        verify(userService).getAllUsersPaginated(0, 10, null, null);
     }
 
     @Test
     void shouldReturnSingleUserById() throws Exception {
         UserEntity user = UserTestFactory.anyUser();
-        when(userService.getUser("1")).thenReturn(user);
-        System.out.println();
+        UserResponseDTO userResponseDTO = UserTestFactory.mapToResponse(user);
+        when(userService.getUser("1")).thenReturn(userResponseDTO);
         mockMvc.perform(get("/api/v1/users/1"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").isNumber())
+                .andExpect(jsonPath("$.id").value(user.getId()))
                 .andExpect(jsonPath("$.email").value(user.getEmail()))
                 .andExpect(jsonPath("$.email").isString())
                 .andExpect(jsonPath("$.username").value(user.getUsername()))
@@ -104,7 +116,9 @@ class UserControllerTest {
         user.setAge(dto.getAge());
         user.setEnabled(true);
 
-        when(userService.createUser(any())).thenReturn(user);
+        UserResponseDTO userResponseDTO = UserTestFactory.mapToResponse(user);
+
+        when(userService.createUser(any())).thenReturn(userResponseDTO);
 
         mockMvc.perform(post("/api/v1/users")
                         .contentType("application/json")
@@ -126,13 +140,17 @@ class UserControllerTest {
     @Test
     void shouldUpdateUser() throws Exception {
         UpdateUserDTO dto = UserTestFactory.anyUpdateDto();
+
         UserEntity user = UserTestFactory.anyUser();
         user.setUsername(dto.getUsername());
         user.setEmail(dto.getEmail());
         user.setPassword(dto.getPassword());
         user.setAge(dto.getAge());
         user.setEnabled(true);
-        when(userService.updateUser(eq("1"), any())).thenReturn(user);
+
+        UserResponseDTO userResponseDTO = UserTestFactory.mapToResponse(user);
+
+        when(userService.updateUser(eq("1"), any())).thenReturn(userResponseDTO);
 
         mockMvc.perform(put("/api/v1/users/1")
                         .contentType("application/json")

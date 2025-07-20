@@ -62,7 +62,7 @@ public class AuthController {
 
     @PostMapping("/register")
     public ResponseEntity<?> register(@RequestBody @Valid CreateUserDTO request) {
-        UserEntity newUser = userService.createUser(request);
+        UserResponseDTO newUser = userService.createUser(request);
         String token = jwtUtils.generateAccessToken(newUser.getEmail());
 
         UserResponseDTO userResponseDTO = new UserResponseDTO();

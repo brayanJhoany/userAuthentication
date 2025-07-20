@@ -4,6 +4,7 @@ import com.app.config.filter.JWTAuthorizationFilter;
 import com.app.config.jwt.JwtUtils;
 import com.app.dto.AuthRequest;
 import com.app.dto.CreateUserDTO;
+import com.app.dto.UserResponseDTO;
 import com.app.entity.UserEntity;
 import com.app.factory.UserTestFactory;
 import com.app.service.UserService;
@@ -128,9 +129,10 @@ class AuthControllerTest {
                 .username(userDTO.getUsername())
                 .age(userDTO.getAge())
                 .build();
+        UserResponseDTO userResponseDTO = UserTestFactory.mapToResponse(savedUser);
 
         when(userService.createUser(any(CreateUserDTO.class)))
-                .thenReturn(savedUser);
+                .thenReturn(userResponseDTO);
         when(jwtUtils.generateAccessToken(savedUser.getEmail()))
                 .thenReturn("fake-jwt-token");
 

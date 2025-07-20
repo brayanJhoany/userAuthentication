@@ -2,6 +2,7 @@ package com.app.factory;
 
 import com.app.dto.CreateUserDTO;
 import com.app.dto.UpdateUserDTO;
+import com.app.dto.UserResponseDTO;
 import com.app.entity.UserEntity;
 
 public class UserTestFactory {
@@ -50,6 +51,13 @@ public class UserTestFactory {
         dto.setAge(31);
         return dto;
     }
-
-
+    public static UserResponseDTO mapToResponse(UserEntity user) {
+        return UserResponseDTO.builder()
+                .id(user.getId())
+                .email(user.getEmail())
+                .username(user.getUsername())
+                .age(user.getAge())
+                .enabled(user.isEnabled())
+                .build();
+    }
 }

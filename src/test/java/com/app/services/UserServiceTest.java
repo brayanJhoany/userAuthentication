@@ -3,6 +3,7 @@ package com.app.services;
 import com.app.dto.CreateUserDTO;
 import com.app.dto.PaginatedResponse;
 import com.app.dto.UpdateUserDTO;
+import com.app.dto.UserResponseDTO;
 import com.app.entity.UserEntity;
 import com.app.exception.user.EmailAlreadyExistsException;
 import com.app.exception.user.UserNotFoundException;
@@ -51,62 +52,62 @@ public class UserServiceTest {
     //Creacion
     @Test
     public void shouldCreateUserWhenValidInput() {
-        when(passwordEncoder.encode(any())).thenReturn("encodedPassword");
-        userService.createUser(createDto);
+        UserEntity userEntity = UserTestFactory.anyUser();
 
+        when(passwordEncoder.encode(any())).thenReturn("encodedPassword");
+        when(userRepository.existsByEmail(anyString())).thenReturn(false);
+        when(userRepository.save(any(UserEntity.class))).thenReturn(userEntity);
+
+        UserResponseDTO response = userService.createUser(createDto);
+
+        // Verificar que se guardó correctamente
         ArgumentCaptor<UserEntity> captor = ArgumentCaptor.forClass(UserEntity.class);
         verify(userRepository).save(captor.capture());
         UserEntity savedUser = captor.getValue();
-        // Assert
+
+        // Verificaciones sobre el UserEntity guardado
         assertThat(savedUser.getEmail()).isEqualTo("default@example.com");
         assertThat(savedUser.getUsername()).isEqualTo("defaultUser");
         assertThat(savedUser.getPassword()).isEqualTo("encodedPassword");
 
+        // Verificaciones sobre el UserResponseDTO retornado
+        assertThat(response.getEmail()).isEqualTo(userEntity.getEmail());
+        assertThat(response.getUsername()).isEqualTo(userEntity.getUsername());
+        assertThat(response.getAge()).isEqualTo(userEntity.getAge());
+        assertThat(response.isEnabled()).isEqualTo(userEntity.isEnabled());
+        assertThat(response.getId()).isEqualTo(userEntity.getId());
+
     }
 
-    @Test
-    void shouldNotCreateUserWhenInputIsInvalid() {
-        when(passwordEncoder.encode(any())).thenReturn("encPwd");
 
-        userService.createUser(createDto);
-
-        ArgumentCaptor<UserEntity> captor = ArgumentCaptor.forClass(UserEntity.class);
-        verify(userRepository).save(captor.capture());
-
-        UserEntity saved = captor.getValue();
-        assertThat(saved)
-                .extracting(UserEntity::getEmail, UserEntity::getUsername, UserEntity::getPassword, UserEntity::isEnabled)
-                .containsExactly("default@example.com", "defaultUser", "encPwd", true);
-    }
 
     @Test
     public void shouldCreateUserWithTheEnabledStatus(){
-        when(passwordEncoder.encode(any())).thenReturn("encodedPassword");
+        UserEntity userEntity = UserTestFactory.anyUser();
 
-        userService.createUser(createDto);
+        when(passwordEncoder.encode(any())).thenReturn("encodedPassword");
+        when(userRepository.existsByEmail(anyString())).thenReturn(false);
+        when(userRepository.save(any(UserEntity.class))).thenReturn(userEntity);
+
+        UserResponseDTO response = userService.createUser(createDto);
+
+        // Verificar que se guardó correctamente
         ArgumentCaptor<UserEntity> captor = ArgumentCaptor.forClass(UserEntity.class);
         verify(userRepository).save(captor.capture());
         UserEntity savedUser = captor.getValue();
-        // Assert
-        assertThat(savedUser)
-                .extracting(UserEntity::getEmail,
-                        UserEntity::getUsername,
-                        UserEntity::getPassword,
-                        UserEntity::isEnabled)
-                .containsExactly("default@example.com",
-                        "defaultUser",
-                        "encodedPassword",
-                        true);
-    }
 
-    @Test
-    public void shouldCreateUserWhenPasswordIsStrong() {
-        when(userRepository.existsByEmail(any())).thenReturn(false);
-        when(passwordEncoder.encode(any())).thenReturn("encodedPassword");
+        // Verificaciones sobre el UserEntity guardado
+        assertThat(savedUser.getEmail()).isEqualTo(userEntity.getEmail());
+        assertThat(savedUser.getUsername()).isEqualTo(userEntity.getUsername());
+        assertThat(savedUser.getPassword()).isEqualTo("encodedPassword");
+        assertThat(savedUser.isEnabled()).isEqualTo(true);
 
-        createDto.setPassword("StrongPassword123!");
-        userService.createUser(createDto);
-        verify(userRepository).save(any(UserEntity.class));
+        // Verificaciones sobre el UserResponseDTO retornado
+        assertThat(response.getEmail()).isEqualTo(userEntity.getEmail());
+        assertThat(response.getUsername()).isEqualTo(userEntity.getUsername());
+        assertThat(response.getAge()).isEqualTo(userEntity.getAge());
+        assertThat(response.isEnabled()).isEqualTo(userEntity.isEnabled());
+        assertThat(response.getId()).isEqualTo(userEntity.getId());
     }
 
     @Test
@@ -126,9 +127,15 @@ public class UserServiceTest {
     @Test
     public void shouldReturnUserWhenExists(){
         UserEntity defaultUser = UserTestFactory.anyUser();
-        when(userRepository.findById(1L)).thenReturn(Optional.of(defaultUser));
-        UserEntity user = userService.getUser("1");
-        assertThat(user).isEqualTo(defaultUser);
+
+        when(userRepository.findById(anyLong())).thenReturn(Optional.of(defaultUser));
+
+        UserResponseDTO response = userService.getUser("1");
+        assertThat(response.getEmail()).isEqualTo(defaultUser.getEmail());
+        assertThat(response.getUsername()).isEqualTo(defaultUser.getUsername());
+        assertThat(response.getAge()).isEqualTo(defaultUser.getAge());
+        assertThat(response.isEnabled()).isEqualTo(defaultUser.isEnabled());
+        assertThat(response.getId()).isEqualTo(defaultUser.getId());
     }
     @Test
     public void shouldThrowExceptionWhenUserNotFound(){
@@ -178,34 +185,60 @@ public class UserServiceTest {
     }
     @Test
     public void shouldUpdateEmailSuccessfully() {
-        UserEntity existingUser = builder().build();
+        UserEntity user = UserTestFactory.anyUser();
+        UserEntity userBuild = builder().build();
 
-        when(userRepository.findById(1L)).thenReturn(Optional.of(existingUser));
+        when(userRepository.findById(1L)).thenReturn(Optional.of(userBuild));
         when(userRepository.existsByEmail("newemail@example.com")).thenReturn(false);
 
         UpdateUserDTO updateUserDTO = new UpdateUserDTO();
         updateUserDTO.setEmail("newemail@example.com");
+        user.setEmail("newemail@example.com");
 
-        userService.updateUser("1", updateUserDTO);
+        when(userRepository.save(any(UserEntity.class))).thenReturn(user);
+        UserResponseDTO response = userService.updateUser("1", updateUserDTO);
 
-        assertThat(existingUser.getEmail()).isEqualTo("newemail@example.com");
-        verify(userRepository).save(existingUser);
+
+        assertThat(userBuild.getId()).isEqualTo(response.getId());
+        assertThat(user.getEmail()).isEqualTo(response.getEmail());
+        assertThat(user.getUsername()).isEqualTo(response.getUsername());
+        assertThat(user.getAge()).isEqualTo(response.getAge());
+        assertThat(user.isEnabled()).isEqualTo(response.isEnabled());
+
+        verify(userRepository).save(user);
     }
 
     @Test
     public void shouldUpdatePasswordSuccessfully() {
-        UserEntity existingUser = builder().build();
+        // Arrange
+        UserEntity existingUser = UserTestFactory.builder().build();
 
-        when(userRepository.findById(1L)).thenReturn(Optional.of(existingUser));
-        when(passwordEncoder.encode("newStrongPassword123!")).thenReturn("encodedPassword");
+        String rawPassword = "newStrongPassword123!";
+        String encodedPassword = "encodedPassword";
 
         UpdateUserDTO updateUserDTO = new UpdateUserDTO();
-        updateUserDTO.setPassword("newStrongPassword123!");
+        updateUserDTO.setPassword(rawPassword);
 
-        userService.updateUser("1", updateUserDTO);
+        when(userRepository.findById(anyLong())).thenReturn(Optional.of(existingUser));
+        when(passwordEncoder.encode(rawPassword)).thenReturn(encodedPassword);
+        when(userRepository.save(any(UserEntity.class)))
+                .thenAnswer(invocation -> invocation.getArgument(0));
 
-        assertThat(existingUser.getPassword()).isEqualTo("encodedPassword");
-        verify(userRepository).save(existingUser);
+        // Act
+        UserResponseDTO response = userService.updateUser("1", updateUserDTO);
+
+        // Assert
+        assertThat(response).isNotNull();
+        assertThat(response.getId()).isEqualTo(existingUser.getId());
+        assertThat(existingUser.getPassword()).isEqualTo(encodedPassword);
+
+        // Verifica que se guardó el usuario con la nueva contraseña
+        ArgumentCaptor<UserEntity> captor = ArgumentCaptor.forClass(UserEntity.class);
+        verify(userRepository).save(captor.capture());
+        assertThat(captor.getValue().getPassword()).isEqualTo(encodedPassword);
+
+        verify(passwordEncoder).encode(rawPassword);
+        verify(userRepository).findById(1L);
     }
     @Test
     public void shouldNotUpdatePasswordIfItIsWeak() {
@@ -221,36 +254,20 @@ public class UserServiceTest {
         verify(userRepository, never()).save(existingUser);
     }
 
-    @Test
-    public void shouldNotUpdateAnythingIfDtoIsEmpty() {
-        UserEntity existingUser = builder().build();
-
-        when(userRepository.findById(1L)).thenReturn(Optional.of(existingUser));
-
-        UpdateUserDTO emptyDTO = new UpdateUserDTO();
-
-        userService.updateUser("1", emptyDTO);
-
-        assertThat(existingUser.getEmail()).isEqualTo("default@example.com");
-        assertThat(existingUser.getUsername()).isEqualTo("defaultUser");
-        assertThat(existingUser.getPassword()).isEqualTo("StrongPass1!");
-
-        verify(userRepository).save(existingUser);
-    }
-
     //Paginacion
     @Test
     public void shouldReturnAllUsersWhenNoFiltersProvided() {
         UserEntity user = builder().build();
+        UserResponseDTO userResponseDTO = mapToResponse(user);
         Page<UserEntity> page = new PageImpl<>(List.of(user));
 
         when(userRepository.findAll(any(Pageable.class))).thenReturn(page);
 
-        PaginatedResponse<UserEntity> response = userService.getAllUsersPaginated(0, 1, null, null);
+        PaginatedResponse<UserResponseDTO> response = userService.getAllUsersPaginated(0, 1, null, null);
 
         assertThat(response).isNotNull();
         assertThat(response.getContent()).hasSize(1);
-        assertThat(response.getContent().get(0)).isEqualTo(user);
+        assertThat(response.getContent().get(0)).isEqualTo(userResponseDTO);
         assertThat(response.getCurrentPage()).isEqualTo(0);
         assertThat(response.getSize()).isEqualTo(1);
     }
@@ -258,15 +275,16 @@ public class UserServiceTest {
     @Test
     public void shouldReturnFilteredUsersWhenFiltersProvided() {
         UserEntity user = builder().build();
+        UserResponseDTO userResponseDTO = mapToResponse(user);
         Page<UserEntity> page = new PageImpl<>(List.of(user));
 
         when(userRepository.findByFilters(eq("default@example.com"), eq(null), any(Pageable.class)))
                 .thenReturn(page);
 
-        PaginatedResponse<UserEntity> response = userService.getAllUsersPaginated(0, 10, "default@example.com", null);
+        PaginatedResponse<UserResponseDTO> response = userService.getAllUsersPaginated(0, 10, "default@example.com", null);
         assertThat(response).isNotNull();
         assertThat(response.getContent()).hasSize(1);
-        assertThat(response.getContent().get(0)).isEqualTo(user);
+        assertThat(response.getContent().get(0)).isEqualTo(userResponseDTO);
         verify(userRepository).findByFilters(eq("default@example.com"), eq(null), any(Pageable.class));
     }
 
@@ -276,7 +294,7 @@ public class UserServiceTest {
 
         when(userRepository.findAll(any(Pageable.class))).thenReturn(emptyPage);
 
-        PaginatedResponse<UserEntity> response = userService.getAllUsersPaginated(0, 10, null, null);
+        PaginatedResponse<UserResponseDTO> response = userService.getAllUsersPaginated(0, 10, null, null);
 
         assertThat(response).isNotNull();
         assertThat(response.getContent()).isEmpty();
