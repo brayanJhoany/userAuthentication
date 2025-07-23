@@ -17,7 +17,7 @@ public class SecurityBypassTestConfig {
 
     @Bean
     public JWTAuthorizationFilter jwtAuthorizationFilter() {
-        return new JWTAuthorizationFilter() {
+        return new JWTAuthorizationFilter(null, null) {
             @Override
             protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
                     throws ServletException, IOException {
