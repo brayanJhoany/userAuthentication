@@ -1,12 +1,9 @@
 package com.app.service;
 
 import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.DisabledException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
-import org.springframework.security.core.userdetails.User;
 import com.app.config.jwt.JwtUtils;
 import com.app.dto.AuthRequest;
 import com.app.dto.AuthResponse;
@@ -15,9 +12,11 @@ import com.app.dto.UserResponseDTO;
 import com.app.entity.UserEntity;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.log4j.Log4j2;
 
 @Service
 @RequiredArgsConstructor
+@Log4j2
 public class AuthService {
 
     private final AuthenticationManager authenticationManager;
@@ -25,16 +24,10 @@ public class AuthService {
     private final UserService userService;
 
      public AuthResponse login(AuthRequest request) {
-        Authentication authentication = authenticationManager.authenticate(
+        authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword())
         );
-
-        User user = (User) authentication.getPrincipal();
-        if (user == null) {
-            throw new BadCredentialsException("Invalid credentials");
-        }
-
-        UserEntity userDB = userService.findByEmail(user.getUsername());
+        UserEntity userDB = userService.findByEmail(request.getEmail());
         if (!userDB.isEnabled()) {
             throw new DisabledException("User account is disabled");
         }
