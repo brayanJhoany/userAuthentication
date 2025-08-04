@@ -8,7 +8,6 @@ on:
     branches: [ master, develop ]
 
 env:
-  # Forzamos perfil “test” para que Spring use H2 y configuración de pruebas
   SPRING_PROFILES_ACTIVE: test
 
 jobs:
@@ -19,9 +18,8 @@ jobs:
 
       SPRING_APPLICATION_NAME: SpringDocker
       SERVER_PORT: 8080
-      JWT_SECRET_KEY: VGhpcyBpcyBhIHZlcnkgc2VjdXJlIHNlY3JldCBrZXkgZm9yIHRlc3RzIQ==
-      JWT_EXPIRATION_TIME: 86400000
-
+      JWT_SECRET_KEY: ${{ secrets.JWT_SECRET_KEY }}
+      JWT_EXPIRATION_TIME: ${{ secrets.JWT_EXPIRATION_TIME }}
       SPRING_DATASOURCE_URL: jdbc:h2:mem:testdb;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
       SPRING_DATASOURCE_DRIVER_CLASS_NAME: org.h2.Driver
       SPRING_DATASOURCE_USERNAME: sa
