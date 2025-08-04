@@ -21,33 +21,33 @@ class JwtUtilsTest {
     private final String email = "test@example.com";
 
     @Test
-    void testGenerateAndValidateToken() {
+    void shouldGenerateAndValidateToken() {
         String token = jwtUtils.generateAccessToken(email);
         assertNotNull(token);
         assertTrue(jwtUtils.validateToken(token));
     }
 
     @Test
-    void testGetEmailFromToken() {
+    void shouldExtractEmailFromToken() {
         String token = jwtUtils.generateAccessToken(email);
         String extracted = jwtUtils.getEmailFromToken(token);
         assertEquals(email, extracted);
     }
 
     @Test
-    void testExtractAllClaims() {
+    void shouldExtractAllClaimsFromValidToken() {
         String token = jwtUtils.generateAccessToken(email);
         Claims claims = jwtUtils.extractAllClaims(token);
         assertEquals(email, claims.getSubject());
     }
 
     @Test
-    void testValidateToken_invalidToken() {
+    void shouldReturnFalseForInvalidToken() {
         assertFalse(jwtUtils.validateToken("invalid.token"));
     }
 
     @Test
-    void testValidateToken_expiredToken() {
+    void shouldReturnFalseForExpiredToken() {
         JwtUtils utils = new JwtUtils();
         ReflectionTestUtils.setField(utils, "secretKey", "VGhpcyBpcyBhIHZlcnkgc2VjdXJlIHNlY3JldCBrZXkgZm9yIHRlc3RzIQ==");
         ReflectionTestUtils.setField(utils, "timeExpiration", "1"); // 1 ms
@@ -61,7 +61,7 @@ class JwtUtilsTest {
     }
 
     @Test
-    void testGetClaim_returnsExpirationDate() {
+    void shouldReturnExpirationDateFromToken() {
         String token = jwtUtils.generateAccessToken(email);
         Date expiration = jwtUtils.getClaim(token, Claims::getExpiration);
 
@@ -70,7 +70,7 @@ class JwtUtilsTest {
     }
 
     @Test
-    void testExtractAllClaims_invalidToken_throwsException() {
+    void shouldThrowExceptionForMalformedToken() {
         assertThrows(Exception.class, () -> jwtUtils.extractAllClaims("malformed.token"));
     }
 
