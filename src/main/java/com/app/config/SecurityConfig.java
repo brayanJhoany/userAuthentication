@@ -18,8 +18,6 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 @RequiredArgsConstructor
 @Configuration
 public class SecurityConfig {
-    private final UserDetailServiceImp userDetailServiceImp;
-    private final JwtUtils jwtUtils;
     private final JWTAuthorizationFilter jwtAuthorizationFilter;
 
     private static final String[] PUBLIC_ROUTES = {
