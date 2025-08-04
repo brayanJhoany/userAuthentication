@@ -8,7 +8,7 @@ public enum ErrorCode {
     // --- Auth ---
     INVALID_CREDENTIALS("Credenciales incorrectas"),
     EMAIL_ALREADY_EXISTS("El email ya está registrado"),
-
+    UNAUTHORIZED("No autorizado"),
     // --- Users ---
     USER_NOT_FOUND("Usuario no encontrado"),
     WEAK_PASSWORD("La contraseña no cumple con los requisitos de seguridad"),
