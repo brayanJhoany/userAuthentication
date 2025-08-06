@@ -39,5 +39,6 @@ public class UserEntity {
     private Integer age;
 
     @Column(nullable = false)
+    @Builder.Default
     private boolean enabled = true;
 }
