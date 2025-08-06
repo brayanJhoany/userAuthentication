@@ -16,8 +16,9 @@ public class UserTestFactory {
                 .id(1L)
                 .email(DEFAULT_EMAIL)
                 .username("testuser")
-                .password("StrongPassword123!")
+                .password(STRONG_PASS)
                 .age(30)
+                .enabled(true)
                 .build();
     }
 
