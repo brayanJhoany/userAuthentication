@@ -2,6 +2,7 @@ package com.app.integration.controller;
 
 import com.app.dto.AuthRequest;
 import com.app.entity.UserEntity;
+import com.app.exception.ErrorCode;
 import com.app.factory.UserTestFactory;
 import com.app.repository.UserRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -9,6 +10,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.web.servlet.MockMvc;
@@ -48,5 +50,24 @@ public class AuthControllerIntegrationTest {
                 .andExpect(jsonPath("$.user.username").value(user.getUsername()))
                 .andExpect(jsonPath("$.user.age").value(user.getAge()))
                 .andExpect(jsonPath("$.user.enabled").value(true));
+    }
+    @Test
+    void shouldNotLoginWhenCredentialsAreInvalid() throws Exception{
+        UserEntity user = UserTestFactory.anyUser();
+        user.setPassword(passwordEncoder.encode("StrongPass1!"));
+        userRepository.save(user);
+
+        AuthRequest request = new AuthRequest(user.getEmail(), "WrongPass1!");
+        String jsonRequest = objectMapper.writeValueAsString(request);
+
+       mockMvc.perform(post("/api/v1/auth/login")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(jsonRequest))
+                .andExpect(status().isUnauthorized())
+                .andExpect(jsonPath("$.code").value(ErrorCode.INVALID_CREDENTIALS.name()))
+                .andExpect(jsonPath("$.message").value(ErrorCode.INVALID_CREDENTIALS.getMessage()))
+                .andExpect(jsonPath("$.status").value(HttpStatus.UNAUTHORIZED.value()));
+
+
     }
 }
