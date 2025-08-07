@@ -11,6 +11,8 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.stream.Collectors;
 
 @RestControllerAdvice
@@ -52,20 +54,19 @@ public class GlobalExceptionHandler {
     private ResponseEntity<ApiErrorResponse> buildError(
             ErrorCode code, HttpStatus status,
             HttpServletRequest req) {
-
         return buildError(code, status, req, code.getDefaultMessage());
     }
 
     private ResponseEntity<ApiErrorResponse> buildError(
             ErrorCode code, HttpStatus status,
             HttpServletRequest req, String message) {
-
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
         ApiErrorResponse body = ApiErrorResponse.builder()
                 .code(code.name())
                 .message(message)
                 .status(status.value())
                 .error(status.getReasonPhrase())
-                .timestamp(Instant.now().toString())
+                .timestamp(LocalDateTime.now().format(formatter))
                 .build();
 
         return new ResponseEntity<>(body, status);
