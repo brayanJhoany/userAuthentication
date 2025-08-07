@@ -22,4 +22,7 @@ public enum ErrorCode {
     ErrorCode(String defaultMessage) {
         this.defaultMessage = defaultMessage;
     }
+    public String getMessage() {
+        return this.defaultMessage;
+    }
 }
