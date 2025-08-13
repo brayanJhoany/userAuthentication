@@ -51,8 +51,10 @@ public class UserControllerIntegrationTest {
                 .id(null)
                 .build();
         userRepository.save(user);
-        AuthRequestDTO loginRequest = new AuthRequestDTO(user.getEmail(), "StrongPass1!");
-        String jsonRequest = objectMapper.writeValueAsString(loginRequest);
+        var body = new java.util.HashMap<String, String>();
+        body.put("email", user.getEmail());
+        body.put("password", "StrongPass1!");
+        String jsonRequest = objectMapper.writeValueAsString(body);
         MvcResult result = mockMvc.perform(post("/api/v1/auth/login")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(jsonRequest))

@@ -23,8 +23,7 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ApiErrorResponse> handleBusiness(
             BusinessException ex, HttpServletRequest request) {
 
-        return buildError(ex.getErrorCode(),
-                ex.getHttpStatus(), request);
+        return buildError(ex.getErrorCode(), ex.getHttpStatus(), request);
     }
 
     // ← Validaciones de @Valid
@@ -72,18 +71,4 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<>(body, status);
     }
 
-    @ExceptionHandler(BadCredentialsException.class)
-    public ResponseEntity<ApiErrorResponse> handleBadCredentials(
-            BadCredentialsException ex, HttpServletRequest req) {
-
-        return buildError(ErrorCode.INVALID_CREDENTIALS,
-                HttpStatus.UNAUTHORIZED, req);
-    }
-    @ExceptionHandler(WeakPasswordException.class)
-    public ResponseEntity<ApiErrorResponse> handleWeakPassword(
-            WeakPasswordException ex, HttpServletRequest req) {
-
-        return buildError(ErrorCode.WEAK_PASSWORD,
-                HttpStatus.BAD_REQUEST, req, ex.getMessage());
-    }
 }

@@ -7,6 +7,7 @@ import com.app.exception.ErrorCode;
 import com.app.factory.UserTestFactory;
 import com.app.repository.UserRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -35,13 +36,21 @@ public class AuthControllerIntegrationTest {
     @Autowired
     private PasswordEncoder passwordEncoder;
 
+    @BeforeEach
+    void setUp() {
+        userRepository.deleteAll();
+    }
+
     @Test
     void shouldLoginSuccessfullyWhenCredentialsAreValid() throws Exception {
         UserEntity user = UserTestFactory.anyUser();
         user.setPassword(passwordEncoder.encode("StrongPass1!"));
         userRepository.save(user);
-        AuthRequestDTO request = new AuthRequestDTO(user.getEmail(), "StrongPass1!");
-        String jsonRequest = objectMapper.writeValueAsString(request);
+        var body = new java.util.HashMap<String, String>();
+        body.put("email", user.getEmail());
+        body.put("password", "StrongPass1!");
+        String jsonRequest = objectMapper.writeValueAsString(body);
+
         mockMvc.perform(post("/api/v1/auth/login")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(jsonRequest))
@@ -58,8 +67,11 @@ public class AuthControllerIntegrationTest {
         user.setPassword(passwordEncoder.encode("StrongPass1!"));
         userRepository.save(user);
 
-        AuthRequestDTO request = new AuthRequestDTO(user.getEmail(), "WrongPass1!");
-        String jsonRequest = objectMapper.writeValueAsString(request);
+        var body = new java.util.HashMap<String, String>();
+        body.put("email", "test@example.com");
+        body.put("password", "StrongPass1!");
+        String jsonRequest = objectMapper.writeValueAsString(body);
+
 
        mockMvc.perform(post("/api/v1/auth/login")
                         .contentType(MediaType.APPLICATION_JSON)

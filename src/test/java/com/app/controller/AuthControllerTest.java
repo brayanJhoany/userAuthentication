@@ -39,17 +39,19 @@ class AuthControllerTest {
 
     @Test
     void shouldReturnTokenAndUserWhenLoginIsSuccessful() throws Exception {
-        // Arrange
-        AuthRequestDTO request = new AuthRequestDTO("test@example.com", "StrongPass1!");
         UserResponseDTO userDto = new UserResponseDTO(1L, "test@example.com", "testUser", 30, true);
         AuthResponseDTO response = new AuthResponseDTO("fake-jwt-token", userDto);
 
         when(authService.login(any(AuthRequestDTO.class))).thenReturn(response);
 
-        // Act & Assert
+        var body = new java.util.HashMap<String, String>();
+        body.put("email", "test@example.com");
+        body.put("password", "StrongPass1!");
+        String json = objectMapper.writeValueAsString(body);
+
         mockMvc.perform(post("/api/v1/auth/login")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(request)))
+                        .content(json))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.token").value("fake-jwt-token"))
                 .andExpect(jsonPath("$.user.email").value("test@example.com"))

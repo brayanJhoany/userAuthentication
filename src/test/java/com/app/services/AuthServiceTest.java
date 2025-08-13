@@ -6,6 +6,7 @@ import com.app.dto.AuthResponseDTO;
 import com.app.dto.CreateUserDTO;
 import com.app.dto.UserResponseDTO;
 import com.app.entity.UserEntity;
+import com.app.exception.auth.InvalidCredentialsException;
 import com.app.factory.UserTestFactory;
 import com.app.service.AuthService;
 import com.app.service.UserService;
@@ -76,15 +77,15 @@ class AuthServiceTest {
     }
 
     @Test
-    void shouldThrowBadCredentialsExceptionWhenAuthenticationFails() {
+    void shouldThrowInvalidCredentialsExceptionWhenAuthenticationFails() {
         // Arrange
         AuthRequestDTO request = new AuthRequestDTO("wrong@example.com", "wrongpass");
-
         when(authenticationManager.authenticate(any()))
                 .thenThrow(new BadCredentialsException("Invalid credentials"));
 
         // Act & Assert
-        assertThrows(BadCredentialsException.class, () -> authService.login(request));
+        assertThrows(InvalidCredentialsException.class, () -> authService.login(request));
+
         verify(authenticationManager).authenticate(any());
         verifyNoInteractions(userService);
         verifyNoInteractions(jwtUtils);
