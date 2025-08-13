@@ -1,7 +1,7 @@
 package com.app.service;
 
 import com.app.dto.CreateUserDTO;
-import com.app.dto.PaginatedResponse;
+import com.app.dto.PaginatedResponseDTO;
 import com.app.dto.UpdateUserDTO;
 import com.app.dto.UserResponseDTO;
 import com.app.entity.UserEntity;
@@ -50,7 +50,7 @@ public class UserService {
                 .orElseThrow(() -> new UserNotFoundException());
     }
 
-    public PaginatedResponse<UserResponseDTO> getAllUsersPaginated(int page, int size, String email, String username) {
+    public PaginatedResponseDTO<UserResponseDTO> getAllUsersPaginated(int page, int size, String email, String username) {
 
         Pageable pageable = PageRequest.of(page, size, Sort.by("id").descending());
         Page<UserEntity> userPage;
@@ -68,7 +68,7 @@ public class UserService {
                 .map(this::toUserResponseDto)
                 .toList();
 
-        return PaginatedResponse.<UserResponseDTO>builder()
+        return PaginatedResponseDTO.<UserResponseDTO>builder()
                 .content(dtoList)
                 .currentPage(userPage.getNumber())
                 .totalPages(userPage.getTotalPages())

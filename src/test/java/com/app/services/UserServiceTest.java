@@ -1,7 +1,7 @@
 package com.app.services;
 
 import com.app.dto.CreateUserDTO;
-import com.app.dto.PaginatedResponse;
+import com.app.dto.PaginatedResponseDTO;
 import com.app.dto.UpdateUserDTO;
 import com.app.dto.UserResponseDTO;
 import com.app.entity.UserEntity;
@@ -263,7 +263,7 @@ public class UserServiceTest {
 
         when(userRepository.findAll(any(Pageable.class))).thenReturn(page);
 
-        PaginatedResponse<UserResponseDTO> response = userService.getAllUsersPaginated(0, 1, null, null);
+        PaginatedResponseDTO<UserResponseDTO> response = userService.getAllUsersPaginated(0, 1, null, null);
 
         assertThat(response).isNotNull();
         assertThat(response.getContent()).hasSize(1);
@@ -281,7 +281,7 @@ public class UserServiceTest {
         when(userRepository.findByFilters(eq("default@example.com"), eq(null), any(Pageable.class)))
                 .thenReturn(page);
 
-        PaginatedResponse<UserResponseDTO> response = userService.getAllUsersPaginated(0, 10, "default@example.com", null);
+        PaginatedResponseDTO<UserResponseDTO> response = userService.getAllUsersPaginated(0, 10, "default@example.com", null);
         assertThat(response).isNotNull();
         assertThat(response.getContent()).hasSize(1);
         assertThat(response.getContent().get(0)).isEqualTo(userResponseDTO);
@@ -294,7 +294,7 @@ public class UserServiceTest {
 
         when(userRepository.findAll(any(Pageable.class))).thenReturn(emptyPage);
 
-        PaginatedResponse<UserResponseDTO> response = userService.getAllUsersPaginated(0, 10, null, null);
+        PaginatedResponseDTO<UserResponseDTO> response = userService.getAllUsersPaginated(0, 10, null, null);
 
         assertThat(response).isNotNull();
         assertThat(response.getContent()).isEmpty();

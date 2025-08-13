@@ -5,8 +5,8 @@ import org.springframework.security.authentication.DisabledException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.stereotype.Service;
 import com.app.config.jwt.JwtUtils;
-import com.app.dto.AuthRequest;
-import com.app.dto.AuthResponse;
+import com.app.dto.AuthRequestDTO;
+import com.app.dto.AuthResponseDTO;
 import com.app.dto.CreateUserDTO;
 import com.app.dto.UserResponseDTO;
 import com.app.entity.UserEntity;
@@ -23,7 +23,7 @@ public class AuthService {
     private final JwtUtils jwtUtils;
     private final UserService userService;
 
-     public AuthResponse login(AuthRequest request) {
+     public AuthResponseDTO login(AuthRequestDTO request) {
         authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword())
         );
@@ -35,14 +35,14 @@ public class AuthService {
         String token = jwtUtils.generateAccessToken(request.getEmail());
         UserResponseDTO dto = toUserResponseDto(userDB);
 
-        return new AuthResponse(token, dto);
+        return new AuthResponseDTO(token, dto);
     }
 
-    public AuthResponse register(CreateUserDTO request) {
+    public AuthResponseDTO register(CreateUserDTO request) {
         UserResponseDTO newUser = userService.createUser(request);
         String token = jwtUtils.generateAccessToken(newUser.getEmail());
 
-        return new AuthResponse(token, newUser);
+        return new AuthResponseDTO(token, newUser);
     }
 
     private UserResponseDTO toUserResponseDto(UserEntity user){

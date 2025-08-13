@@ -1,8 +1,8 @@
 package com.app.controller;
 
 import com.app.config.filter.JWTAuthorizationFilter;
-import com.app.dto.AuthRequest;
-import com.app.dto.AuthResponse;
+import com.app.dto.AuthRequestDTO;
+import com.app.dto.AuthResponseDTO;
 import com.app.dto.CreateUserDTO;
 import com.app.dto.UserResponseDTO;
 import com.app.factory.UserTestFactory;
@@ -40,11 +40,11 @@ class AuthControllerTest {
     @Test
     void shouldReturnTokenAndUserWhenLoginIsSuccessful() throws Exception {
         // Arrange
-        AuthRequest request = new AuthRequest("test@example.com", "StrongPass1!");
+        AuthRequestDTO request = new AuthRequestDTO("test@example.com", "StrongPass1!");
         UserResponseDTO userDto = new UserResponseDTO(1L, "test@example.com", "testUser", 30, true);
-        AuthResponse response = new AuthResponse("fake-jwt-token", userDto);
+        AuthResponseDTO response = new AuthResponseDTO("fake-jwt-token", userDto);
 
-        when(authService.login(any(AuthRequest.class))).thenReturn(response);
+        when(authService.login(any(AuthRequestDTO.class))).thenReturn(response);
 
         // Act & Assert
         mockMvc.perform(post("/api/v1/auth/login")
@@ -57,7 +57,7 @@ class AuthControllerTest {
                 .andExpect(jsonPath("$.user.age").value(30))
                 .andExpect(jsonPath("$.user.enabled").value(true));
 
-        verify(authService).login(any(AuthRequest.class));
+        verify(authService).login(any(AuthRequestDTO.class));
     }
 
     @Test
@@ -71,7 +71,7 @@ class AuthControllerTest {
                         .age(request.getAge())
                         .build()
         );
-        AuthResponse response = new AuthResponse("fake-jwt-token", userDto);
+        AuthResponseDTO response = new AuthResponseDTO("fake-jwt-token", userDto);
 
         when(authService.register(any(CreateUserDTO.class))).thenReturn(response);
 

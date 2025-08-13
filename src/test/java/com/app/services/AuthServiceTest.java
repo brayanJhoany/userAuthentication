@@ -1,8 +1,8 @@
 package com.app.services;
 
 import com.app.config.jwt.JwtUtils;
-import com.app.dto.AuthRequest;
-import com.app.dto.AuthResponse;
+import com.app.dto.AuthRequestDTO;
+import com.app.dto.AuthResponseDTO;
 import com.app.dto.CreateUserDTO;
 import com.app.dto.UserResponseDTO;
 import com.app.entity.UserEntity;
@@ -49,7 +49,7 @@ class AuthServiceTest {
         String password = "StrongPass1!";
         String fakeToken = "fake-jwt-token";
 
-        AuthRequest request = new AuthRequest(email, password);
+        AuthRequestDTO request = new AuthRequestDTO(email, password);
 
         User user = new User(email, password, Collections.emptyList());
         Authentication authentication = new UsernamePasswordAuthenticationToken(user, null);
@@ -64,7 +64,7 @@ class AuthServiceTest {
         when(jwtUtils.generateAccessToken(email)).thenReturn(fakeToken);
 
         // Act
-        AuthResponse response = authService.login(request);
+        AuthResponseDTO response = authService.login(request);
 
         // Assert
         assertEquals(fakeToken, response.getToken());
@@ -78,7 +78,7 @@ class AuthServiceTest {
     @Test
     void shouldThrowBadCredentialsExceptionWhenAuthenticationFails() {
         // Arrange
-        AuthRequest request = new AuthRequest("wrong@example.com", "wrongpass");
+        AuthRequestDTO request = new AuthRequestDTO("wrong@example.com", "wrongpass");
 
         when(authenticationManager.authenticate(any()))
                 .thenThrow(new BadCredentialsException("Invalid credentials"));
@@ -94,7 +94,7 @@ class AuthServiceTest {
     void shouldThrowDisabledExceptionWhenUserIsNotEnabled() {
         // Arrange
         String email = "disabled@example.com";
-        AuthRequest request = new AuthRequest(email, "pass");
+        AuthRequestDTO request = new AuthRequestDTO(email, "pass");
 
         User user = new User(email, "pass", Collections.emptyList());
         Authentication authentication = new UsernamePasswordAuthenticationToken(user, null);
@@ -131,7 +131,7 @@ class AuthServiceTest {
         when(jwtUtils.generateAccessToken(userDto.getEmail())).thenReturn(fakeToken);
 
         // Act
-        AuthResponse response = authService.register(request);
+        AuthResponseDTO response = authService.register(request);
 
         // Assert
         assertEquals(fakeToken, response.getToken());

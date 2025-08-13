@@ -1,6 +1,6 @@
 package com.app.integration.controller;
 
-import com.app.dto.AuthRequest;
+import com.app.dto.AuthRequestDTO;
 import com.app.entity.UserEntity;
 import com.app.exception.ErrorCode;
 import com.app.factory.UserTestFactory;
@@ -51,7 +51,7 @@ public class UserControllerIntegrationTest {
                 .id(null)
                 .build();
         userRepository.save(user);
-        AuthRequest loginRequest = new AuthRequest(user.getEmail(), "StrongPass1!");
+        AuthRequestDTO loginRequest = new AuthRequestDTO(user.getEmail(), "StrongPass1!");
         String jsonRequest = objectMapper.writeValueAsString(loginRequest);
         MvcResult result = mockMvc.perform(post("/api/v1/auth/login")
                         .contentType(MediaType.APPLICATION_JSON)

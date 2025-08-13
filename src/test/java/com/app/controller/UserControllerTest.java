@@ -2,7 +2,7 @@ package com.app.controller;
 
 import com.app.config.filter.JWTAuthorizationFilter;
 import com.app.dto.CreateUserDTO;
-import com.app.dto.PaginatedResponse;
+import com.app.dto.PaginatedResponseDTO;
 import com.app.dto.UpdateUserDTO;
 import com.app.dto.UserResponseDTO;
 import com.app.entity.UserEntity;
@@ -51,7 +51,7 @@ class UserControllerTest {
 
         UserEntity user = UserTestFactory.anyUser();
         UserResponseDTO userResponseDTO = UserTestFactory.mapToResponse(user);
-        PaginatedResponse<UserResponseDTO> page = PaginatedResponse.<UserResponseDTO>builder()
+        PaginatedResponseDTO<UserResponseDTO> page = PaginatedResponseDTO.<UserResponseDTO>builder()
                 .content(List.of(userResponseDTO))
                 .currentPage(0)
                 .totalPages(1)
