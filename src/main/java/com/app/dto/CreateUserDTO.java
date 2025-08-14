@@ -11,23 +11,23 @@ import lombok.*;
 @AllArgsConstructor
 @ToString(exclude = "password")
 public class CreateUserDTO {
-    @Email(message = "{createUser.email.email}")
-    @NotBlank(message = "{createUser.email.notBlank}")
-    @Size(min = 4, max = 255, message = "{createUser.email.size}")
+    @Email
+    @NotBlank
+    @Size(min = 4, max = 255)
     private String email;
 
-    @NotBlank(message = "{createUser.username.notBlank}")
-    @Size(min = 4, max = 255, message = "{createUser.username.size}")
+    @NotBlank
+    @Size(min = 4, max = 255)
     private String username;
 
-    @NotBlank(message = "{createUser.password.notBlank}")
-    @Size(min = 6, message = "{createUser.password.size}")
+    @NotBlank
+    @Size(min = 6)
     @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     private String password;
 
-    @NotNull(message = "{createUser.age.notNull}")
-    @Min(value = 1, message = "{createUser.age.min}")
-    @Max(value = 130, message = "{createUser.age.max}")
+    @NotNull
+    @Min(1)
+    @Max(130)
     private Integer age;
 
 }

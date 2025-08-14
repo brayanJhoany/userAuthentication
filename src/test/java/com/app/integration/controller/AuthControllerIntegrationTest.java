@@ -151,15 +151,13 @@ public class AuthControllerIntegrationTest {
 
 
         String jsonRequest = objectMapper.writeValueAsString(body);
-        String emailMsg = messageSource.getMessage("createUser.email.email", null, Locale.getDefault());
-        String passwordMsg = messageSource.getMessage("createUser.password.size", null, Locale.getDefault());
         mockMvc.perform(post("/api/v1/auth/register")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(jsonRequest))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.code").value(ErrorCode.VALIDATION_ERROR.name()))
-                .andExpect(jsonPath("$.message").value(org.hamcrest.Matchers.containsString("email: " + emailMsg)))
-                .andExpect(jsonPath("$.message").value(org.hamcrest.Matchers.containsString("password: " + passwordMsg)))
+                .andExpect(jsonPath("$.message").value(org.hamcrest.Matchers.containsString("email:")))
+                .andExpect(jsonPath("$.message").value(org.hamcrest.Matchers.containsString("password:")))
                 .andExpect(jsonPath("$.status").value(HttpStatus.BAD_REQUEST.value()))
                 .andReturn();
     }

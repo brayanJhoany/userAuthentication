@@ -14,12 +14,12 @@ import lombok.*;
 @ToString(exclude = "password")
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class AuthRequestDTO {
-    @NotBlank(message = "{authRequest.email.notBlank}")
-    @Email(message = "{authRequest.email.email}")
+    @NotBlank()
+    @Email()
     private String email;
 
-    @NotBlank(message = "{authRequest.password.notBlank}")
-    @Size(min = 6, max = 255, message = "{authRequest.password.size}")
+    @NotBlank()
+    @Size(min = 6, max = 255)
     @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     private String password;
 }
