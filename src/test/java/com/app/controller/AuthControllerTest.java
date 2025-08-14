@@ -40,7 +40,10 @@ class AuthControllerTest {
     @Test
     void shouldReturnTokenAndUserWhenLoginIsSuccessful() throws Exception {
         UserResponseDTO userDto = new UserResponseDTO(1L, "test@example.com", "testUser", 30, true);
-        AuthResponseDTO response = new AuthResponseDTO("fake-jwt-token", userDto);
+        AuthResponseDTO response = AuthResponseDTO.builder()
+                                                .token("fake-jwt-token")
+                                                .user(userDto)
+                                                .build();
 
         when(authService.login(any(AuthRequestDTO.class))).thenReturn(response);
 
@@ -64,8 +67,13 @@ class AuthControllerTest {
 
     @Test
     void shouldReturnTokenAndUserWhenRegisterIsSuccessful() throws Exception {
-        // Arrange
         CreateUserDTO request = UserTestFactory.anyCreateDto();
+        var body = new java.util.HashMap<String, Object>();
+        body.put("email", request.getEmail());
+        body.put("username", request.getUsername());
+        body.put("password", request.getPassword());
+        body.put("age", request.getAge());
+
         UserResponseDTO userDto = UserTestFactory.mapToResponse(
                 UserTestFactory.builder()
                         .email(request.getEmail())
@@ -73,14 +81,14 @@ class AuthControllerTest {
                         .age(request.getAge())
                         .build()
         );
-        AuthResponseDTO response = new AuthResponseDTO("fake-jwt-token", userDto);
-
+        AuthResponseDTO response =AuthResponseDTO.builder()
+                .token("fake-jwt-token")
+                .user(userDto)
+                .build();
         when(authService.register(any(CreateUserDTO.class))).thenReturn(response);
-
-        // Act & Assert
         mockMvc.perform(post("/api/v1/auth/register")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(request)))
+                        .content(objectMapper.writeValueAsString(body)))
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.token").value("fake-jwt-token"))
                 .andExpect(jsonPath("$.user.id").value(userDto.getId()))

@@ -50,6 +50,7 @@ class UserControllerTest {
     void shouldReturnPaginatedUsers() throws Exception {
 
         UserEntity user = UserTestFactory.anyUser();
+
         UserResponseDTO userResponseDTO = UserTestFactory.mapToResponse(user);
         PaginatedResponseDTO<UserResponseDTO> page = PaginatedResponseDTO.<UserResponseDTO>builder()
                 .content(List.of(userResponseDTO))
@@ -109,6 +110,12 @@ class UserControllerTest {
     void shouldCreateUser() throws Exception {
         CreateUserDTO dto = UserTestFactory.anyCreateDto();
 
+        var body = new java.util.HashMap<String, Object>();
+        body.put("email", dto.getEmail());
+        body.put("username", dto.getUsername());
+        body.put("password", dto.getPassword());
+        body.put("age", dto.getAge());
+
         UserEntity user = UserTestFactory.builder().build();
         user.setUsername(dto.getUsername());
         user.setEmail(dto.getEmail());
@@ -122,7 +129,7 @@ class UserControllerTest {
 
         mockMvc.perform(post("/api/v1/users")
                         .contentType("application/json")
-                        .content(objectMapper.writeValueAsString(dto)))
+                        .content(objectMapper.writeValueAsString(body)))
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.id").isNumber())
                 .andExpect(jsonPath("$.email").value(user.getEmail()))

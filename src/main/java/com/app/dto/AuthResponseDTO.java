@@ -1,13 +1,11 @@
 package com.app.dto;
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
 
-@Data
-@AllArgsConstructor
-@NoArgsConstructor
+@Getter
+@Builder
 public class AuthResponseDTO {
-    private String token;
-    private UserResponseDTO user;
+    private final String token;
+    private final UserResponseDTO user;
 }

@@ -1,31 +1,33 @@
 package com.app.dto;
 
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.validation.constraints.*;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
-@Data
-@AllArgsConstructor
+@Getter
+@Setter
 @NoArgsConstructor
+@AllArgsConstructor
+@ToString(exclude = "password")
 public class CreateUserDTO {
-    @Email
-    @NotBlank
-    @Size(min = 4, max = 255)
+    @Email(message = "{createUser.email.email}")
+    @NotBlank(message = "{createUser.email.notBlank}")
+    @Size(min = 4, max = 255, message = "{createUser.email.size}")
     private String email;
 
-    @NotBlank
-    @Size(min = 4, max = 255)
+    @NotBlank(message = "{createUser.username.notBlank}")
+    @Size(min = 4, max = 255, message = "{createUser.username.size}")
     private String username;
 
-    @NotBlank
-    @Size(min = 6)
+    @NotBlank(message = "{createUser.password.notBlank}")
+    @Size(min = 6, message = "{createUser.password.size}")
+    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     private String password;
 
-    @NotNull(message = "La edad es obligatoria")
-    @Min(1)
-    @Max(130)
+    @NotNull(message = "{createUser.age.notNull}")
+    @Min(value = 1, message = "{createUser.age.min}")
+    @Max(value = 130, message = "{createUser.age.max}")
     private Integer age;
 
 }

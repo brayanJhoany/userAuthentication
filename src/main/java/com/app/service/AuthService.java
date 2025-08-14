@@ -41,15 +41,21 @@ public class AuthService {
 
         String token = jwtUtils.generateAccessToken(request.getEmail());
         UserResponseDTO dto = toUserResponseDto(userDB);
-
-        return new AuthResponseDTO(token, dto);
+        AuthResponseDTO authResponse = AuthResponseDTO.builder()
+                .token(token)
+                .user(dto)
+                .build();
+        return authResponse;
     }
 
     public AuthResponseDTO register(CreateUserDTO request) {
         UserResponseDTO newUser = userService.createUser(request);
         String token = jwtUtils.generateAccessToken(newUser.getEmail());
-
-        return new AuthResponseDTO(token, newUser);
+        AuthResponseDTO authResponse = AuthResponseDTO.builder()
+                .token(token)
+                .user(newUser)
+                .build();
+        return authResponse;
     }
 
     private UserResponseDTO toUserResponseDto(UserEntity user){

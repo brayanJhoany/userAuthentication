@@ -12,10 +12,13 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.context.MessageSource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.web.servlet.MockMvc;
+
+import java.util.Locale;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -35,6 +38,9 @@ public class AuthControllerIntegrationTest {
 
     @Autowired
     private PasswordEncoder passwordEncoder;
+
+    @Autowired
+    private MessageSource messageSource;
 
     @BeforeEach
     void setUp() {
@@ -87,7 +93,14 @@ public class AuthControllerIntegrationTest {
     @Test
     void shouldRegisterUserSuccessfully() throws Exception {
         CreateUserDTO userDtoRequest =  UserTestFactory.anyCreateDto();
-        String jsonRequest = objectMapper.writeValueAsString(userDtoRequest);
+
+        var body = new java.util.HashMap<String, Object>();
+        body.put("email", userDtoRequest.getEmail());
+        body.put("username", userDtoRequest.getUsername());
+        body.put("password", userDtoRequest.getPassword());
+        body.put("age", userDtoRequest.getAge());
+
+        String jsonRequest = objectMapper.writeValueAsString(body);
         mockMvc.perform(post("/api/v1/auth/register")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(jsonRequest))
@@ -104,8 +117,15 @@ public class AuthControllerIntegrationTest {
         user.setPassword(passwordEncoder.encode("StrongPass1!"));
         userRepository.save(user);
         CreateUserDTO userDtoRequest = UserTestFactory.anyCreateDto();
+
+        var body = new java.util.HashMap<String, Object>();
+        body.put("email", userDtoRequest.getEmail());
+        body.put("username", userDtoRequest.getUsername());
+        body.put("password", userDtoRequest.getPassword());
+        body.put("age", userDtoRequest.getAge());
+
         userDtoRequest.setEmail(user.getEmail()); // Use existing email
-        String jsonRequest = objectMapper.writeValueAsString(userDtoRequest);
+        String jsonRequest = objectMapper.writeValueAsString(body);
         mockMvc.perform(post("/api/v1/auth/register")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(jsonRequest))
@@ -122,15 +142,24 @@ public class AuthControllerIntegrationTest {
         userDtoRequest.setEmail("invalid-email");
         userDtoRequest.setPassword("weak");
         userDtoRequest.setAge(10);
-        String jsonRequest = objectMapper.writeValueAsString(userDtoRequest);
 
+        var body = new java.util.HashMap<String, Object>();
+        body.put("email", userDtoRequest.getEmail());
+        body.put("username", userDtoRequest.getUsername());
+        body.put("password", userDtoRequest.getPassword());
+        body.put("age", userDtoRequest.getAge());
+
+
+        String jsonRequest = objectMapper.writeValueAsString(body);
+        String emailMsg = messageSource.getMessage("createUser.email.email", null, Locale.getDefault());
+        String passwordMsg = messageSource.getMessage("createUser.password.size", null, Locale.getDefault());
         mockMvc.perform(post("/api/v1/auth/register")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(jsonRequest))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.code").value(ErrorCode.VALIDATION_ERROR.name()))
-                .andExpect(jsonPath("$.message").value(org.hamcrest.Matchers.containsString("email: must be a well-formed email address")))
-                .andExpect(jsonPath("$.message").value(org.hamcrest.Matchers.containsString("password: size must be between")))
+                .andExpect(jsonPath("$.message").value(org.hamcrest.Matchers.containsString("email: " + emailMsg)))
+                .andExpect(jsonPath("$.message").value(org.hamcrest.Matchers.containsString("password: " + passwordMsg)))
                 .andExpect(jsonPath("$.status").value(HttpStatus.BAD_REQUEST.value()))
                 .andReturn();
     }
