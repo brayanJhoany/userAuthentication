@@ -40,7 +40,7 @@ public class JWTAuthorizationFilter extends OncePerRequestFilter {
             if (email == null) {
                 throw new UnauthorizedException();
             }
-            UserDetails userDetails = userDetailServiceImp.loadUserByUsername(email);
+            UserDetails userDetails = userDetailServiceImp.loadUserByEmail(email);
             UsernamePasswordAuthenticationToken auth = new UsernamePasswordAuthenticationToken(email, null,
                     userDetails.getAuthorities());
             SecurityContextHolder.getContext().setAuthentication(auth);

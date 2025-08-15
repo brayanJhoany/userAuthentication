@@ -1,7 +1,9 @@
 package com.app.config.filter;
 
 import com.app.config.jwt.JwtUtils;
+import com.app.exception.ErrorCode;
 import com.app.exception.auth.UnauthorizedException;
+import com.app.exception.user.UserNotFoundException;
 import com.app.service.UserDetailServiceImp;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -53,16 +55,17 @@ class JWTAuthorizationFilterTest {
     void shouldAuthenticateUserWhenTokenIsValid() throws ServletException, IOException {
         String token = "valid.token";
         String email = "test@example.com";
+        when(request.getHeader("Authorization")).thenReturn("Bearer " + token);
         UserDetails userDetails = new User(email, "password", Collections.emptyList());
 
         when(request.getHeader("Authorization")).thenReturn("Bearer " + token);
         when(jwtUtils.validateToken(token)).thenReturn(true);
         when(jwtUtils.getEmailFromToken(token)).thenReturn(email);
-        when(userDetailServiceImp.loadUserByUsername(email)).thenReturn(userDetails);
+        when(userDetailServiceImp.loadUserByEmail(email)).thenReturn(userDetails);
 
         filter.doFilterInternal(request, response, filterChain);
 
-        verify(userDetailServiceImp).loadUserByUsername(email);
+        verify(userDetailServiceImp).loadUserByEmail(email);
         verify(filterChain).doFilter(request, response);
         assertNotNull(org.springframework.security.core.context.SecurityContextHolder.getContext().getAuthentication());
     }
@@ -110,13 +113,13 @@ class JWTAuthorizationFilterTest {
         when(request.getHeader("Authorization")).thenReturn("Bearer " + token);
         when(jwtUtils.validateToken(token)).thenReturn(true);
         when(jwtUtils.getEmailFromToken(token)).thenReturn(email);
-        when(userDetailServiceImp.loadUserByUsername(email)).thenThrow(new RuntimeException("User not found"));
+        when(userDetailServiceImp.loadUserByEmail(email)).thenThrow(new UserNotFoundException());
 
         RuntimeException exception = assertThrows(RuntimeException.class, () ->
                 filter.doFilterInternal(request, response, filterChain)
         );
 
-        assertEquals("User not found", exception.getMessage());
+        assertEquals(ErrorCode.USER_NOT_FOUND.getMessage(), exception.getMessage());
     }
 
     @Test
