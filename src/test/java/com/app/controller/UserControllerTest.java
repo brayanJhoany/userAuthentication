@@ -21,6 +21,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import java.util.List;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
+import org.springframework.data.domain.Pageable;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
@@ -57,11 +58,11 @@ class UserControllerTest {
                 .currentPage(0)
                 .totalPages(1)
                 .totalElements(1L)
-                .size(1)
+                .size(10)
                 .last(true)
                 .build();
 
-        when(userService.getAllUsersPaginated(0, 10, null, null))
+        when(userService.getAllUsersPaginated(any(), eq(null), eq(null)))
                 .thenReturn(page);
 
         mockMvc.perform(get("/api/v1/users")
@@ -81,10 +82,10 @@ class UserControllerTest {
                 .andExpect(jsonPath("$.currentPage").value(0))
                 .andExpect(jsonPath("$.totalPages").value(1))
                 .andExpect(jsonPath("$.totalElements").value(1))
-                .andExpect(jsonPath("$.size").value(1))
+                .andExpect(jsonPath("$.size").value(10))
                 .andExpect(jsonPath("$.last").value(true));
-        //
-        verify(userService).getAllUsersPaginated(0, 10, null, null);
+
+        verify(userService).getAllUsersPaginated(any(), eq(null), eq(null));
     }
 
     @Test

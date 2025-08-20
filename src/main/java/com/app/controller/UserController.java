@@ -8,6 +8,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 @RestController
 @RequestMapping("/api/v1/users")
 public class UserController {
@@ -16,13 +18,13 @@ public class UserController {
 
     @GetMapping
     public ResponseEntity<?> getUsersPaginate(
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size,
+            @PageableDefault(size = 10) Pageable pageable,
             @RequestParam(required = false) String email,
             @RequestParam(required = false) String username
     ) {
-        return ResponseEntity.ok(userService.getAllUsersPaginated(page, size, email, username));
+        return ResponseEntity.ok(userService.getAllUsersPaginated(pageable, email, username));
     }
+
 
     @GetMapping("/{id}")
     public ResponseEntity<?> getUser(@PathVariable String id) {

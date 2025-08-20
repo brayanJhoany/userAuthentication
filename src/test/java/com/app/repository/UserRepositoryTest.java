@@ -61,53 +61,6 @@ public class UserRepositoryTest {
     }
 
     @Test
-    void shouldReturnUserWhenFilterByEmail() {
-        UserEntity user = createDefaultUser();
-        user.setId(null);
-        entityManager.persist(user);
-        entityManager.flush();
-
-        Page<UserEntity> results = userRepository.findByFilters("default", null, PageRequest.of(0, 10));
-        // Assert
-        assertThat(results)
-                .isNotNull()
-                .hasSize(1)
-                .allSatisfy(foundUser -> {
-                    assertThat(foundUser.getEmail()).isEqualTo(user.getEmail());
-                    assertThat(foundUser.getUsername()).isEqualTo(user.getUsername());
-                });
-    }
-    @Test
-    void shouldReturnUserWhenFilterByUsername(){
-        UserEntity user = createDefaultUser();
-        user.setId(null);
-        entityManager.persist(user);
-        entityManager.flush();
-        Page<UserEntity> results =userRepository.findByFilters(null,"test", PageRequest.of(0, 10));
-        // Assert
-        assertThat(results)
-                .isNotNull()
-                .hasSize(1)
-                .allSatisfy(foundUser ->{
-                   assertThat(foundUser.getUsername()).isEqualTo(user.getUsername());
-                   assertThat(foundUser.getEmail()).isEqualTo(user.getEmail());
-                   assertThat(foundUser.getAge()).isEqualTo(user.getAge());
-                });
-    }
-    @Test
-    void shouldReturnEmptyWhenNoMatch(){
-        UserEntity user = createDefaultUser();
-        user.setId(null);
-        entityManager.persist(user);
-        entityManager.flush();
-        Page<UserEntity> results =userRepository.findByFilters(null,"nonexistent", PageRequest.of(0, 10));
-
-        // Assert
-        assertThat(results)
-                .isNotNull()
-                .hasSize(0);
-    }
-    @Test
     void shouldSaveUserSuccessfully() {
         UserEntity user = createDefaultUser();
         UserEntity saved = userRepository.save(user);

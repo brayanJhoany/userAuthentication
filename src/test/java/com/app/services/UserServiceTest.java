@@ -21,6 +21,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.util.List;
@@ -78,8 +79,6 @@ public class UserServiceTest {
         assertThat(response.getId()).isEqualTo(userEntity.getId());
 
     }
-
-
 
     @Test
     public void shouldCreateUserWithTheEnabledStatus(){
@@ -258,47 +257,70 @@ public class UserServiceTest {
     @Test
     public void shouldReturnAllUsersWhenNoFiltersProvided() {
         UserEntity user = builder().build();
-        UserResponseDTO userResponseDTO = mapToResponse(user);
+        UserResponseDTO expected = mapToResponse(user);
         Page<UserEntity> page = new PageImpl<>(List.of(user));
+        Pageable pageable = Pageable.ofSize(1).withPage(0);
+        when(userRepository.findAll(any(Specification.class), any(Pageable.class)))
+                .thenReturn(page);
+        PaginatedResponseDTO<UserResponseDTO> response =
+                userService.getAllUsersPaginated(pageable, null, null);
 
-        when(userRepository.findAll(any(Pageable.class))).thenReturn(page);
-
-        PaginatedResponseDTO<UserResponseDTO> response = userService.getAllUsersPaginated(0, 1, null, null);
-
+        // Assert
         assertThat(response).isNotNull();
         assertThat(response.getContent()).hasSize(1);
-        assertThat(response.getContent().get(0)).isEqualTo(userResponseDTO);
+        assertThat(response.getContent().get(0)).isEqualTo(expected);
         assertThat(response.getCurrentPage()).isEqualTo(0);
         assertThat(response.getSize()).isEqualTo(1);
+
+        verify(userRepository).findAll(any(Specification.class), eq(pageable));
     }
 
     @Test
     public void shouldReturnFilteredUsersWhenFiltersProvided() {
+        // Arrange
         UserEntity user = builder().build();
-        UserResponseDTO userResponseDTO = mapToResponse(user);
+        UserResponseDTO expected = mapToResponse(user);
         Page<UserEntity> page = new PageImpl<>(List.of(user));
+        Pageable pageable = Pageable.ofSize(1).withPage(0);
 
-        when(userRepository.findByFilters(eq("default@example.com"), eq(null), any(Pageable.class)))
+        when(userRepository.findAll(any(Specification.class), eq(pageable)))
                 .thenReturn(page);
 
-        PaginatedResponseDTO<UserResponseDTO> response = userService.getAllUsersPaginated(0, 10, "default@example.com", null);
+        PaginatedResponseDTO<UserResponseDTO> response =
+                userService.getAllUsersPaginated(pageable, "default@example.com", null);
+
+        // Assert
         assertThat(response).isNotNull();
-        assertThat(response.getContent()).hasSize(1);
-        assertThat(response.getContent().get(0)).isEqualTo(userResponseDTO);
-        verify(userRepository).findByFilters(eq("default@example.com"), eq(null), any(Pageable.class));
+        assertThat(response.getContent()).containsExactly(expected);
+        assertThat(response.getCurrentPage()).isEqualTo(0);
+        assertThat(response.getSize()).isEqualTo(1);
+
+        // Verificación de la invocación con Specification + Pageable
+        @SuppressWarnings("unchecked")
+        ArgumentCaptor<Specification<UserEntity>> specCaptor =
+                ArgumentCaptor.forClass(Specification.class);
+
+        verify(userRepository).findAll(specCaptor.capture(), eq(pageable));
+        assertThat(specCaptor.getValue()).isNotNull();
     }
 
     @Test
     public void shouldReturnEmptyPageWhenNoUsersFound() {
         Page<UserEntity> emptyPage = new PageImpl<>(List.of());
+        Pageable pageable = Pageable.ofSize(1).withPage(0);
+        when(userRepository.findAll(any(Specification.class), eq(pageable)))
+                .thenReturn(emptyPage);
 
-        when(userRepository.findAll(any(Pageable.class))).thenReturn(emptyPage);
-
-        PaginatedResponseDTO<UserResponseDTO> response = userService.getAllUsersPaginated(0, 10, null, null);
+        PaginatedResponseDTO<UserResponseDTO> response = userService.getAllUsersPaginated(pageable, null, null);
 
         assertThat(response).isNotNull();
         assertThat(response.getContent()).isEmpty();
         assertThat(response.getTotalElements()).isEqualTo(0);
+
+        @SuppressWarnings("unchecked")
+        ArgumentCaptor<Specification<UserEntity>> specCaptor =
+                ArgumentCaptor.forClass(Specification.class);
+        verify(userRepository).findAll(specCaptor.capture(), eq(pageable));
     }
 
 }

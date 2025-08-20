@@ -10,27 +10,29 @@ import com.app.exception.user.UserNotFoundException;
 import com.app.exception.user.WeakPasswordException;
 import com.app.repository.UserRepository;
 import jakarta.validation.Valid;
+import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 
+import static com.app.repository.specification.UserSpecifications.emailContains;
+import static com.app.repository.specification.UserSpecifications.usernameContains;
+
 
 @Slf4j
 @Service
+@AllArgsConstructor
 public class UserService {
+    @Autowired
     private final UserRepository userRepository;
+    @Autowired
     private final PasswordEncoder passwordEncoder;
-
-    public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder) {
-        this.userRepository = userRepository;
-        this.passwordEncoder = passwordEncoder;
-    }
 
     public UserResponseDTO getUser(String id) {
         Long userId = Long.valueOf(id);
@@ -50,21 +52,14 @@ public class UserService {
                 .orElseThrow(() -> new UserNotFoundException());
     }
 
-    public PaginatedResponseDTO<UserResponseDTO> getAllUsersPaginated(int page, int size, String email, String username) {
+    public PaginatedResponseDTO<UserResponseDTO> getAllUsersPaginated(Pageable pageable, String email, String username) {
 
-        Pageable pageable = PageRequest.of(page, size, Sort.by("id").descending());
-        Page<UserEntity> userPage;
-        email = (email != null && !email.isBlank()) ? email : null;
-        username = (username != null && !username.isBlank()) ? username : null;
+        var spec = Specification.where(emailContains(email))
+                .and(usernameContains(username));
 
-        if (email != null || username != null) {
-            userPage = userRepository.findByFilters(email, username, pageable);
-        } else {
-            userPage = userRepository.findAll(pageable);
-        }
-        List<UserResponseDTO> dtoList = userPage
-                .getContent()
-                .stream()
+        Page<UserEntity> userPage = userRepository.findAll(spec, pageable);
+
+        List<UserResponseDTO> dtoList = userPage.getContent().stream()
                 .map(this::toUserResponseDto)
                 .toList();
 
