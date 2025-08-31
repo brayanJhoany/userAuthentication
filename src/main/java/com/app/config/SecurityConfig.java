@@ -23,7 +23,12 @@ public class SecurityConfig {
     private static final String[] PUBLIC_ROUTES = {
             "/api/v1/auth/login",
             "/api/v1/auth/register",
-            "/api/v1/auth/recovery-password"
+            "/api/v1/auth/recovery-password",
+            "/actuator/health",
+            "/swagger-ui/**",
+            "/swagger-ui.html",
+            "/v3/api-docs/**",
+            "/v3/api-docs.yaml"
     };
 
     @Bean
