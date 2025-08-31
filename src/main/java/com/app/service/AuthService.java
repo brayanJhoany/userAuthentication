@@ -1,8 +1,8 @@
 package com.app.service;
 
+import com.app.exception.auth.DisabledAccountException;
 import com.app.exception.auth.InvalidCredentialsException;
 import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.DisabledException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.stereotype.Service;
@@ -36,7 +36,7 @@ public class AuthService {
         }
         UserEntity userDB = userService.findByEmail(request.getEmail());
         if (!userDB.isEnabled()) {
-            throw new DisabledException("User account is disabled");
+            throw new DisabledAccountException();
         }
 
         String token = jwtUtils.generateAccessToken(request.getEmail());
