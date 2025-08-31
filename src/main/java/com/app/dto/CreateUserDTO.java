@@ -21,7 +21,7 @@ public class CreateUserDTO {
     private String username;
 
     @NotBlank
-    @Size(min = 6)
+    @Size(min = 6, max = 255)
     @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     private String password;
 
