@@ -6,6 +6,7 @@ import com.app.dto.AuthResponseDTO;
 import com.app.dto.CreateUserDTO;
 import com.app.dto.UserResponseDTO;
 import com.app.entity.UserEntity;
+import com.app.exception.auth.DisabledAccountException;
 import com.app.exception.auth.InvalidCredentialsException;
 import com.app.factory.UserTestFactory;
 import com.app.service.AuthService;
@@ -98,6 +99,7 @@ class AuthServiceTest {
         AuthRequestDTO request = new AuthRequestDTO(email, "pass");
 
         User user = new User(email, "pass", Collections.emptyList());
+
         Authentication authentication = new UsernamePasswordAuthenticationToken(user, null);
 
         UserEntity userEntity = UserTestFactory.builder()
@@ -109,7 +111,7 @@ class AuthServiceTest {
         when(userService.findByEmail(email)).thenReturn(userEntity);
 
         // Act & Assert
-        assertThrows(DisabledException.class, () -> authService.login(request));
+        assertThrows(DisabledAccountException.class, () -> authService.login(request));
         verify(authenticationManager).authenticate(any());
         verify(userService).findByEmail(email);
         verifyNoInteractions(jwtUtils);
