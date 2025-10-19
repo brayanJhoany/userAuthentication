@@ -1,5 +1,6 @@
 package com.app.dto;
 
+import com.app.validation.StrongPassword;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
@@ -31,6 +32,7 @@ public class UpdateUserDTO {
     @Max(value = 120, message = "{age.max}")
     private Integer age;
 
+    @StrongPassword
     @Size(min = 8, max = 72, message = "{password.size}")
     @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     private String password;

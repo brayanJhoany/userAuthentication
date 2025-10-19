@@ -1,6 +1,7 @@
 package com.app.dto;
 
 
+import com.app.validation.StrongPassword;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.validation.constraints.*;
 import lombok.*;
@@ -21,7 +22,8 @@ public class CreateUserDTO {
     private String username;
 
     @NotBlank
-    @Size(min = 6, max = 255)
+    @StrongPassword
+    @Size(min = 8, max = 255)
     @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     private String password;
 
