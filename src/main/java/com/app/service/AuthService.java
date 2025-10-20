@@ -1,9 +1,9 @@
 package com.app.service;
 
+import com.app.config.security.EmailAuthenticationToken;
 import com.app.exception.auth.DisabledAccountException;
 import com.app.exception.auth.InvalidCredentialsException;
 import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.stereotype.Service;
 import com.app.config.jwt.JwtUtils;
@@ -29,7 +29,7 @@ public class AuthService {
      public AuthResponseDTO login(AuthRequestDTO request) {
         try {
             authenticationManager.authenticate(
-                    new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword())
+                    new EmailAuthenticationToken(request.getEmail(), request.getPassword())
             );
         } catch (AuthenticationException e) {
             throw new InvalidCredentialsException();

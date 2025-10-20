@@ -1,6 +1,7 @@
 package com.app.config.filter;
 
 import com.app.config.jwt.JwtUtils;
+import com.app.config.security.EmailAuthenticationToken;
 import com.app.exception.auth.UnauthorizedException;
 import com.app.service.UserDetailServiceImp;
 import jakarta.servlet.FilterChain;
@@ -8,7 +9,6 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
@@ -41,8 +41,7 @@ public class JWTAuthorizationFilter extends OncePerRequestFilter {
                 throw new UnauthorizedException();
             }
             UserDetails userDetails = userDetailServiceImp.loadUserByEmail(email);
-            UsernamePasswordAuthenticationToken auth = new UsernamePasswordAuthenticationToken(email, null,
-                    userDetails.getAuthorities());
+            EmailAuthenticationToken auth = new EmailAuthenticationToken(email, userDetails.getAuthorities());
             SecurityContextHolder.getContext().setAuthentication(auth);
         }
 

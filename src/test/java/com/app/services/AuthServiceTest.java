@@ -1,6 +1,7 @@
 package com.app.services;
 
 import com.app.config.jwt.JwtUtils;
+import com.app.config.security.EmailAuthenticationToken;
 import com.app.dto.AuthRequestDTO;
 import com.app.dto.AuthResponseDTO;
 import com.app.dto.CreateUserDTO;
@@ -18,8 +19,6 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
-import org.springframework.security.authentication.DisabledException;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.User;
 
@@ -54,7 +53,7 @@ class AuthServiceTest {
         AuthRequestDTO request = new AuthRequestDTO(email, password);
 
         User user = new User(email, password, Collections.emptyList());
-        Authentication authentication = new UsernamePasswordAuthenticationToken(user, null);
+        Authentication authentication = new EmailAuthenticationToken(email, Collections.emptyList());
 
         UserEntity userEntity = UserTestFactory.builder()
                 .email(email)
@@ -100,7 +99,7 @@ class AuthServiceTest {
 
         User user = new User(email, "pass", Collections.emptyList());
 
-        Authentication authentication = new UsernamePasswordAuthenticationToken(user, null);
+        Authentication authentication = new EmailAuthenticationToken(email, Collections.emptyList());
 
         UserEntity userEntity = UserTestFactory.builder()
                 .email(email)

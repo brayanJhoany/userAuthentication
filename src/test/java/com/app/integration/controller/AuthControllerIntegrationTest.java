@@ -70,12 +70,13 @@ public class AuthControllerIntegrationTest {
     @Test
     void shouldNotLoginWhenCredentialsAreInvalid() throws Exception{
         UserEntity user = UserTestFactory.anyUser();
+        user.setEmail("test@example.com");
         user.setPassword(passwordEncoder.encode("StrongPass1!"));
         userRepository.save(user);
 
         var body = new java.util.HashMap<String, String>();
         body.put("email", "test@example.com");
-        body.put("password", "StrongPass1!");
+        body.put("password", "errorPass!");
         String jsonRequest = objectMapper.writeValueAsString(body);
 
 
