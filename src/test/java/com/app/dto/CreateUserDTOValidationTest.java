@@ -88,7 +88,7 @@ class CreateUserDTOValidationTest {
         Set<ConstraintViolation<CreateUserDTO>> violations = validator.validate(dto);
         assertThat(violations)
                 .isNotEmpty()
-                .hasSizeGreaterThanOrEqualTo(4); /
+                .hasSizeGreaterThanOrEqualTo(4);
     }
 
     @Test
